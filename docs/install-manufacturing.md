@@ -20,4 +20,4 @@ Step-by-step provisioning for a fresh Asus NUC. **Implemented in M1** (requires 
    - `sudo scripts/install/03-enable-services.sh`
 5. Smoke test: `curl http://frogswork.local/api/health`
 
-Full checklist and SSH hardening notes will be added when M1 is complete.
+Full checklist and smoke tests will be added when M1 is complete. Step-by-step guide: [`dev-steps/M1.md`](dev-steps/M1.md).

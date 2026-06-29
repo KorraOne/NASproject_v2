@@ -10,6 +10,7 @@ A business buys a pre-configured Asus NUC, plugs it into their network, and mana
 |----------|---------|
 | [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) | Product vision — what to build and why |
 | [`docs/development-behaviour.md`](docs/development-behaviour.md) | How to develop — workflow, git, testing, deployment |
+| [`docs/dev-steps/README.md`](docs/dev-steps/README.md) | **Per-milestone implementation guides** (M0–M9) |
 | [`docs/architecture.md`](docs/architecture.md) | System components and data paths |
 | [`docs/install-manufacturing.md`](docs/install-manufacturing.md) | NUC provisioning (M1+) |
 | [`docs/api.md`](docs/api.md) | API conventions and endpoint reference |
@@ -28,9 +29,9 @@ VERSION           Release version (currently 0.0.0-dev)
 
 ## Status
 
-**M0 (scaffold)** — repo structure and deploy templates in place. No appliance logic yet.
+**M0 (scaffold)** — complete. See [`docs/dev-steps/M0.md`](docs/dev-steps/M0.md).
 
-**M1** requires a NUC running Ubuntu Server 24.04 with SSH access from your laptop.
+**M1** requires a NUC running Ubuntu Server 24.04 with SSH access. Guide: [`docs/dev-steps/M1.md`](docs/dev-steps/M1.md).
 
 ## Dev prerequisites (Windows laptop)
 

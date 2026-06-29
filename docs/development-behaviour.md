@@ -93,7 +93,8 @@ Every work session follows this sequence:
 1. Run relevant tests (§7).
 2. If integration feature: smoke-test on NUC or document what the user must verify.
 3. Commit if user requested commits and work is a complete conceptual unit.
-4. Summarize: what changed, what milestone progress, what is next, any blockers.
+4. **Update [`docs/dev-steps/M*.md`](dev-steps/README.md)** for the milestone you worked on — mark steps done, record commits, note deviations.
+5. Summarize: what changed, what milestone progress, what is next, any blockers.
 
 ---
 
@@ -282,6 +283,7 @@ Update docs **in the same milestone** as the code they describe:
 | Doc | Updated when |
 |-----|--------------|
 | [`README.md`](../README.md) | M0, M9 |
+| [`docs/dev-steps/`](dev-steps/README.md) | **After each milestone** — update status, commits, deviations in the matching `M*.md` |
 | [`docs/architecture.md`](architecture.md) | M1, major arch changes |
 | [`docs/install-manufacturing.md`](install-manufacturing.md) | M1, M9 |
 | [`docs/development-behaviour.md`](development-behaviour.md) | M0; revise if workflow changes |
