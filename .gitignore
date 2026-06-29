@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Node / dashboard
+node_modules/
+dashboard/dist/
+*.tsbuildinfo
+
+# .NET / helper
+helper/**/bin/
+helper/**/obj/
+helper/**/*.user
+helper/**/*.suo
+*.dll
+*.exe
+*.pdb
+publish/
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# OS and editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
+
+# Cursor (local plans and cache)
+.cursor/
+
+# Appliance runtime (not in repo)
+/var/
