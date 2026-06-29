@@ -1,0 +1,9 @@
+[Unit]
+Description=FrogsWork btrfs snapshot and retention
+RequiresMountsFor=/data
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/frogswork/scripts/btrfs/snapshot.sh
+ExecStartPost=/opt/frogswork/scripts/btrfs/apply-retention.sh

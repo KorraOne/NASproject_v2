@@ -1,0 +1,12 @@
+[Unit]
+Description=FrogsWork post-install sanity checks
+After=frogswork-api.service
+ConditionPathExists=!/var/lib/frogswork/setup_complete
+
+[Service]
+Type=oneshot
+ExecStart=/bin/true
+# M2: replace with real first-boot checks
+
+[Install]
+WantedBy=multi-user.target
