@@ -10,11 +10,52 @@ A business buys a pre-configured Asus NUC, plugs it into their network, and mana
 |----------|---------|
 | [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) | Product vision — what to build and why |
 | [`docs/development-behaviour.md`](docs/development-behaviour.md) | How to develop — workflow, git, testing, deployment |
-| [Implementation plan](.cursor/plans/frogswork_file_storage_d3d107e4.plan.md) | Architecture, tech stack, milestones M0–M9 |
+| [`docs/architecture.md`](docs/architecture.md) | System components and data paths |
+| [`docs/install-manufacturing.md`](docs/install-manufacturing.md) | NUC provisioning (M1+) |
+| [`docs/api.md`](docs/api.md) | API conventions and endpoint reference |
+
+## Repository layout
+
+```
+backend/          Python FastAPI control plane
+dashboard/        React owner dashboard
+helper/           C# Windows tray app
+scripts/          Install, btrfs, dev sync scripts
+deploy/           nginx, systemd, avahi templates
+docs/             Architecture, manufacturing, API notes
+VERSION           Release version (currently 0.0.0-dev)
+```
 
 ## Status
 
-Greenfield implementation in progress. See the implementation plan for the current milestone.
+**M0 (scaffold)** — repo structure and deploy templates in place. No appliance logic yet.
+
+**M1** requires a NUC running Ubuntu Server 24.04 with SSH access from your laptop.
+
+## Dev prerequisites (Windows laptop)
+
+| Tool | Purpose |
+|------|---------|
+| Python 3.12+ | Backend lint/tests |
+| Node.js 20+ | Dashboard build |
+| .NET 8 SDK | Helper app build |
+| git | Version control |
+
+### Quick checks
+
+```bash
+# Backend unit tests (from backend/)
+python -m venv .venv
+.venv\Scripts\pip install -e ".[dev]"
+.venv\Scripts\pytest
+
+# Dashboard (from dashboard/)
+npm install
+npm run build
+
+# Helper (from helper/FrogsWork.Helper/)
+dotnet build
+```
 
 ## Hardware
 
