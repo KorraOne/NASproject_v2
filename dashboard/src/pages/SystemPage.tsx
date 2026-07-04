@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   getSshStatus,
   getSystemInfo,
@@ -8,8 +9,12 @@ import {
   type SystemInfo,
 } from "../api/system";
 import { ApiRequestError, formatBytes, formatPercent } from "../api/client";
+import { CopyButton } from "../components/CopyButton";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { GuideCard } from "../components/GuideCard";
 import { Loading } from "../components/Loading";
+import { PageIntro } from "../components/PageIntro";
+import { StepGuide } from "../components/StepGuide";
 
 function formatUptime(seconds: number): string {
   const days = Math.floor(seconds / 86400);
@@ -88,55 +93,114 @@ export function SystemPage() {
   if (!info) return <ErrorBanner message={error ?? "No data."} />;
 
   const dataPct = formatPercent(info.data_used_bytes, info.data_total_bytes);
+  const primaryIp = info.ips[0] ?? "";
+  const dashboardUrl = primaryIp ? `http://${primaryIp}` : "http://frogswork.local";
+
+  const helperSteps = [
+    {
+      title: "Create their account",
+      body: (
+        <p>
+          Go to <Link to="/users">Users</Link>, click <strong>Add user</strong>, and note the username and
+          password you give them.
+        </p>
+      ),
+    },
+    {
+      title: "Download the helper app",
+      body: <p>Send them the installer below, or download it on their Windows PC.</p>,
+      action: (
+        <a className="btn btn-primary btn-large" href="/api/helper/download">
+          Download FrogsWork Helper
+        </a>
+      ),
+    },
+    {
+      title: "Install and open",
+      body: (
+        <>
+          <p>Run <strong>FrogsWork.Helper.exe</strong>. Windows may ask whether to allow the app — choose Run or Allow.</p>
+          <GuideCard variant="tip" title="Windows SmartScreen">
+            You may see a blue warning that the app is unrecognized. Click <strong>More info</strong>, then{" "}
+            <strong>Run anyway</strong>. We will offer a signed installer in a future update.
+          </GuideCard>
+        </>
+      ),
+    },
+    {
+      title: "Sign in",
+      body: (
+        <p>
+          In the helper, use the address <strong>{primaryIp || "shown above"}</strong>, their username, and the
+          password you created. Stick to the IP address if the name does not work.
+        </p>
+      ),
+    },
+    {
+      title: "Done",
+      body: (
+        <p>
+          Their personal files appear on drive <strong>U:</strong> and shared folders on <strong>S:</strong> (and
+          other letters) in File Explorer.
+        </p>
+      ),
+    },
+  ];
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <h1>System</h1>
-          <p className="lede">Appliance health, network details, and support access controls.</p>
-        </div>
-        <button type="button" className="btn btn-ghost" onClick={load}>
-          Refresh
-        </button>
-      </header>
+      <PageIntro
+        title="System"
+        lede="Set up Windows PCs for your team, and manage appliance settings."
+        action={
+          <button type="button" className="btn btn-ghost" onClick={load}>
+            Refresh
+          </button>
+        }
+      />
 
       <ErrorBanner message={error} />
 
-      <div className="storage-grid">
+      <section className="card featured-card section-card">
+        <h2>Set up a Windows PC</h2>
+        <p className="section-card-lede">
+          Follow these steps once per employee. You only need to do the user account part — they handle the rest
+          on their computer.
+        </p>
+        <StepGuide steps={helperSteps} />
+      </section>
+
+      <div className="storage-grid section-card">
         <section className="card">
-          <h2>Network</h2>
+          <h2>Your FrogsWork box</h2>
           <dl className="stat-list">
             <div>
-              <dt>Hostname</dt>
+              <dt>Name on network</dt>
               <dd>{info.hostname}</dd>
             </div>
             <div>
-              <dt>Address</dt>
-              <dd>{info.ips.join(", ") || "—"}</dd>
-            </div>
-            <div>
-              <dt>Dashboard URL</dt>
+              <dt>Address for helper sign-in</dt>
               <dd>
-                <code>http://frogswork.local</code>
+                {primaryIp || "—"}
+                {primaryIp ? <CopyButton text={primaryIp} label="Copy IP" /> : null}
               </dd>
             </div>
             <div>
-              <dt>Uptime</dt>
-              <dd>{formatUptime(info.uptime_seconds)}</dd>
+              <dt>Open dashboard in browser</dt>
+              <dd>
+                {dashboardUrl}
+                <CopyButton text={dashboardUrl} label="Copy link" />
+              </dd>
             </div>
             <div>
-              <dt>Software version</dt>
-              <dd>{info.version}</dd>
+              <dt>Running since</dt>
+              <dd>{formatUptime(info.uptime_seconds)}</dd>
             </div>
           </dl>
         </section>
 
         <section className="card storage-card">
-          <h2>Data volume</h2>
-          <p className="storage-mount">
-            <code>{info.data_mount}</code>
-          </p>
+          <h2>Storage space</h2>
           <div className="storage-bar" aria-hidden>
             <div className="storage-bar-fill" style={{ width: `${dataPct}%` }} />
           </div>
@@ -147,11 +211,10 @@ export function SystemPage() {
         </section>
       </div>
 
-      <section className="card panel">
-        <h2>Remote support SSH</h2>
-        <p className="lede">
-          When enabled, technicians can connect over SSH from your network. Disabled by default for
-          security.
+      <section className="card panel section-card">
+        <h2>Remote support</h2>
+        <p className="section-card-lede">
+          Allow a technician to connect over SSH from your network. Leave this off unless you need help.
         </p>
         <label className="checkbox-row ssh-toggle">
           <input type="checkbox" checked={sshEnabled} disabled={busy} onChange={onToggleSsh} />
@@ -159,9 +222,11 @@ export function SystemPage() {
         </label>
       </section>
 
-      <section className="card panel">
-        <h2>Power</h2>
-        <p className="lede">Restart or shut down the appliance. File sharing will stop until it is back on.</p>
+      <section className="card panel section-card">
+        <h2>Restart or shut down</h2>
+        <p className="section-card-lede">
+          File sharing stops while the box is off or restarting. Usually takes about a minute to come back.
+        </p>
         <div className="form-actions">
           <button type="button" className="btn btn-ghost" onClick={() => setPowerAction("reboot")}>
             Reboot
@@ -172,16 +237,27 @@ export function SystemPage() {
         </div>
       </section>
 
-        <section className="card panel">
-          <h2>Windows helper app</h2>
-          <p className="lede">
-            Employees install this on their PC to map network drives automatically. Windows may show a
-            SmartScreen warning because the installer is not code-signed yet.
-          </p>
-          <a className="btn btn-primary" href="/api/helper/download">
-            Download FrogsWork Helper
-          </a>
-        </section>
+      <details className="card details-toggle section-card">
+        <summary>Advanced details</summary>
+        <div className="details-panel">
+          <dl className="stat-list">
+            <div>
+              <dt>Software version</dt>
+              <dd>{info.version}</dd>
+            </div>
+            <div>
+              <dt>Data folder</dt>
+              <dd>
+                <code>{info.data_mount}</code>
+              </dd>
+            </div>
+            <div>
+              <dt>All network addresses</dt>
+              <dd>{info.ips.join(", ") || "—"}</dd>
+            </div>
+          </dl>
+        </div>
+      </details>
 
       {powerAction && (
         <section className="card restore-dialog">

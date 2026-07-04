@@ -51,6 +51,7 @@ public partial class LoginWindow : Window
     private async void Connect_Click(object sender, RoutedEventArgs e)
     {
         ErrorText.Text = "";
+        ErrorPanel.Visibility = Visibility.Collapsed;
         ConnectButton.IsEnabled = false;
         Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
         try
@@ -60,7 +61,8 @@ public partial class LoginWindow : Window
             var password = PasswordBox.Password;
             if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
             {
-                ErrorText.Text = "Enter appliance, username, and password.";
+                ErrorText.Text = "Enter the address, username, and password.";
+                ErrorPanel.Visibility = Visibility.Visible;
                 return;
             }
 
@@ -76,6 +78,7 @@ public partial class LoginWindow : Window
         catch (Exception ex)
         {
             ErrorText.Text = ex.Message;
+            ErrorPanel.Visibility = Visibility.Visible;
             Session = null;
         }
         finally
