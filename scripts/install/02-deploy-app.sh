@@ -23,6 +23,8 @@ if ! id frogswork &>/dev/null; then
 fi
 mkdir -p /var/lib/frogswork
 chown frogswork:frogswork /var/lib/frogswork
+mkdir -p /var/lib/frogswork/helper
+chown frogswork:frogswork /var/lib/frogswork/helper
 
 echo "==> Python virtualenv..."
 VENV="${INSTALL_ROOT}/venv"

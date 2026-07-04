@@ -141,6 +141,19 @@ Restore requires the `confirm_token` from the restore-token endpoint (prevents a
 
 Remote SSH is **off by default** on new setups (`AllowUsers` drop-in). Upgraded appliances keep existing SSH until toggled in the dashboard.
 
+## Helper (Windows app + file users)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/helper/mounts` | Drive list for signed-in file user (HTTP Basic auth) |
+| GET | `/api/helper/download` | Download `FrogsWork.Helper.exe` |
+
+### GET `/api/helper/mounts`
+
+Authenticate with file user credentials (`Authorization: Basic …`). Returns private home (`U:`) and shared folders (`S:`, `T:`, …) with UNC paths and suggested drive letters.
+
+Build the helper on Windows: `scripts/dev/build-helper.sh --deploy`
+
 ## Example flow (curl)
 
 ```bash

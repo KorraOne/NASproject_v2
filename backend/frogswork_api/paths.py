@@ -16,6 +16,8 @@ DB_PATH = STATE_DIR / "frogswork.db"
 JWT_SECRET_FILE = STATE_DIR / "jwt_secret"
 SAMBA_SHARES_STAGING = STATE_DIR / "samba-shares"
 SAMBA_SHARES_D = Path("/etc/samba/shares.d")
+HELPER_DIR = STATE_DIR / "helper"
+HELPER_EXE = HELPER_DIR / "FrogsWork.Helper.exe"
 
 
 def read_version() -> str:

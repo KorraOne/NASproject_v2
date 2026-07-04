@@ -8,6 +8,7 @@ from frogswork_api.auth.router import router as auth_router
 from frogswork_api.config import get_jwt_secret
 from frogswork_api.db import connect, init_db, is_setup_complete
 from frogswork_api.folders.router import router as folders_router
+from frogswork_api.helper.router import router as helper_router
 from frogswork_api.integrations.linux_users import ensure_superuser_group
 from frogswork_api.paths import read_version
 from frogswork_api.services.folders import sync_all_folders
@@ -45,6 +46,7 @@ app = FastAPI(
 )
 
 app.include_router(setup_router)
+app.include_router(helper_router)
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(folders_router)

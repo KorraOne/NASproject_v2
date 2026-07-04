@@ -172,13 +172,16 @@ export function SystemPage() {
         </div>
       </section>
 
-      <section className="card panel">
-        <h2>Windows helper app</h2>
-        <p className="lede">
-          Employees use the helper app to map network drives. Download will be available here in a
-          future update.
-        </p>
-      </section>
+        <section className="card panel">
+          <h2>Windows helper app</h2>
+          <p className="lede">
+            Employees install this on their PC to map network drives automatically. Windows may show a
+            SmartScreen warning because the installer is not code-signed yet.
+          </p>
+          <a className="btn btn-primary" href="/api/helper/download">
+            Download FrogsWork Helper
+          </a>
+        </section>
 
       {powerAction && (
         <section className="card restore-dialog">

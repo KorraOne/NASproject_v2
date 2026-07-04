@@ -171,6 +171,22 @@ class PowerConfirmRequest(BaseModel):
     confirm: bool = False
 
 
+class HelperMountResponse(BaseModel):
+    label: str
+    share: str
+    unc_path: str
+    suggested_letter: str
+    kind: str
+    access: str
+
+
+class HelperMountListResponse(BaseModel):
+    hostname: str
+    username: str
+    display_name: str
+    mounts: list[HelperMountResponse]
+
+
 FileUserUpdateRequest.model_rebuild()
 FolderPermissionsReplaceRequest.model_rebuild()
 
