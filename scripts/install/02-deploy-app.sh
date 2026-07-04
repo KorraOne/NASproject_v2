@@ -1,5 +1,75 @@
 #!/usr/bin/env bash
-# Build dashboard, install Python venv, copy deploy configs. Implemented in M1.
+# Deploy application code, Python venv, dashboard build, and config files.
 set -euo pipefail
-echo "frogswork: 02-deploy-app.sh is a placeholder until M1." >&2
-exit 1
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+INSTALL_ROOT="${FROGSWORK_INSTALL_ROOT:-/opt/frogswork}"
+
+if [[ "${REPO_ROOT}" != "${INSTALL_ROOT}" && -d "${INSTALL_ROOT}/backend" ]]; then
+  REPO_ROOT="${INSTALL_ROOT}"
+fi
+
+echo "==> Deploy root: ${REPO_ROOT}"
+
+if [[ ! -f "${REPO_ROOT}/backend/pyproject.toml" ]]; then
+  echo "ERROR: backend not found under ${REPO_ROOT}" >&2
+  exit 1
+fi
+
+echo "==> Ensuring frogswork service user..."
+if ! id frogswork &>/dev/null; then
+  useradd --system --home-dir /var/lib/frogswork --shell /usr/sbin/nologin frogswork
+fi
+mkdir -p /var/lib/frogswork
+chown frogswork:frogswork /var/lib/frogswork
+
+echo "==> Python virtualenv..."
+VENV="${INSTALL_ROOT}/venv"
+if [[ ! -d "${VENV}" ]]; then
+  python3 -m venv "${VENV}"
+fi
+"${VENV}/bin/pip" install -q --upgrade pip
+"${VENV}/bin/pip" install -q -e "${REPO_ROOT}/backend"
+
+echo "==> Building dashboard..."
+cd "${REPO_ROOT}/dashboard"
+if [[ -f package-lock.json ]]; then
+  npm ci --silent
+else
+  npm install --silent
+fi
+npm run build
+
+echo "==> Installing nginx site..."
+install -m 644 "${REPO_ROOT}/deploy/nginx/frogswork.conf" /etc/nginx/sites-available/frogswork
+ln -sf /etc/nginx/sites-available/frogswork /etc/nginx/sites-enabled/frogswork
+rm -f /etc/nginx/sites-enabled/default
+
+echo "==> Installing systemd units..."
+install -m 644 "${REPO_ROOT}/deploy/systemd/"*.service /etc/systemd/system/
+install -m 644 "${REPO_ROOT}/deploy/systemd/"*.timer /etc/systemd/system/ 2>/dev/null || true
+
+echo "==> Installing Avahi service..."
+mkdir -p /etc/avahi/services
+install -m 644 "${REPO_ROOT}/deploy/avahi/frogswork.service" /etc/avahi/services/frogswork.service
+
+echo "==> Installing Samba base config..."
+mkdir -p /etc/samba/shares.d
+install -m 644 "${REPO_ROOT}/scripts/samba/templates/smb.conf" /etc/samba/smb.conf
+echo "# placeholder — dynamic shares added in M4" > /etc/samba/shares.d/00-placeholder.conf
+
+echo "==> Setting ownership on ${INSTALL_ROOT}..."
+chown -R root:root "${INSTALL_ROOT}"
+chmod -R a+rX "${REPO_ROOT}/backend"
+chmod -R a+rX "${REPO_ROOT}/dashboard/dist"
+# Allow deploy user to rsync updates (dev only; tighten in M9 if needed).
+DEPLOY_USER="${SUDO_USER:-${FROGSWORK_DEPLOY_USER:-korra}}"
+if id "${DEPLOY_USER}" &>/dev/null; then
+  chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_ROOT}"
+fi
+
+systemctl daemon-reload
+nginx -t
+
+echo "==> 02-deploy-app.sh complete."

@@ -8,11 +8,9 @@ RequiresMountsFor=/data
 Type=simple
 User=frogswork
 Group=frogswork
-RuntimeDirectory=frogswork
-RuntimeDirectoryMode=0750
 WorkingDirectory=/opt/frogswork/backend
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/opt/frogswork/venv/bin/uvicorn frogswork_api.main:app --uds /run/frogswork/api.sock --umask 007
+ExecStart=/opt/frogswork/venv/bin/uvicorn frogswork_api.main:app --host 127.0.0.1 --port 8000
 Restart=on-failure
 RestartSec=5
 

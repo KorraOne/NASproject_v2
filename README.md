@@ -29,9 +29,9 @@ VERSION           Release version (currently 0.0.0-dev)
 
 ## Status
 
-**M0 (scaffold)** — complete. See [`docs/dev-steps/M0.md`](docs/dev-steps/M0.md).
+**M1 (provisioning)** — complete on NUC `nuc1`. Health: `http://192.168.0.232/api/health`
 
-**M1** requires a NUC running Ubuntu Server 24.04 with SSH access. Guide: [`docs/dev-steps/M1.md`](docs/dev-steps/M1.md).
+**M2** — setup wizard and SQLite. Guide: [`docs/dev-steps/M2.md`](docs/dev-steps/M2.md).
 
 ## Dev prerequisites (Windows laptop)
 
