@@ -59,13 +59,6 @@ mkdir -p /etc/samba/shares.d
 install -m 644 "${REPO_ROOT}/scripts/samba/templates/smb.conf" /etc/samba/smb.conf
 echo "# placeholder — dynamic shares added in M4" > /etc/samba/shares.d/00-placeholder.conf
 
-echo "==> Installing SSH remote-access policy (disabled by default on first install)..."
-mkdir -p /etc/ssh/sshd_config.d
-if [[ ! -f /etc/ssh/sshd_config.d/frogswork.conf ]]; then
-  install -m 644 "${REPO_ROOT}/deploy/ssh/sshd-frogswork-disabled.conf" /etc/ssh/sshd_config.d/frogswork.conf
-  systemctl reload ssh 2>/dev/null || true
-fi
-
 echo "==> Setting ownership on ${INSTALL_ROOT}..."
 chown -R root:root "${INSTALL_ROOT}"
 chmod -R a+rX "${REPO_ROOT}/backend"
