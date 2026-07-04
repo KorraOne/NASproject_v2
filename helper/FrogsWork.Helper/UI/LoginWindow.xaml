@@ -9,7 +9,7 @@
   <StackPanel Margin="20">
     <TextBlock FontSize="20" FontWeight="SemiBold" Text="Connect to FrogsWork" />
     <TextBlock Margin="0,8,0,16" TextWrapping="Wrap"
-               Text="Sign in with your file user account to map your private folder and shared drives." />
+               Text="Sign in with your file user account to map your private folder and shared drives. Use the appliance IP (e.g. 192.168.0.232) if frogswork.local does not resolve." />
 
     <TextBlock Text="Appliance" />
     <ComboBox x:Name="HostBox" Margin="0,4,0,12" IsEditable="True" />

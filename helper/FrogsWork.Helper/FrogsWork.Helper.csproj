@@ -11,6 +11,8 @@
     <AssemblyName>FrogsWork.Helper</AssemblyName>
     <Version>0.0.0-dev</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PublishTrimmed>false</PublishTrimmed>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>

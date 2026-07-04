@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Input;
 using FrogsWork.Helper.Discovery;
 using FrogsWork.Helper.Services;
 
@@ -11,24 +12,47 @@ public partial class LoginWindow : Window
     public LoginWindow()
     {
         InitializeComponent();
+        HostBox.Text = ApplianceDiscovery.DefaultHost;
         Loaded += OnLoaded;
+    }
+
+    public void Prefill(UserSession session)
+    {
+        HostBox.Text = session.Host;
+        UsernameBox.Text = session.Username;
+        PasswordBox.Password = session.Password;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        HostBox.Items.Clear();
-        var appliances = await ApplianceDiscovery.DiscoverAsync();
-        foreach (var appliance in appliances)
+        try
         {
-            HostBox.Items.Add(appliance.Hostname);
+            HostBox.Items.Clear();
+            HostBox.Items.Add(ApplianceDiscovery.DefaultHost);
+            var appliances = await ApplianceDiscovery.DiscoverAsync();
+            foreach (var appliance in appliances)
+            {
+                if (!HostBox.Items.Contains(appliance.Hostname))
+                {
+                    HostBox.Items.Add(appliance.Hostname);
+                }
+            }
+            if (HostBox.Items.Count > 0 && string.IsNullOrWhiteSpace(HostBox.Text))
+            {
+                HostBox.Text = appliances[0].Hostname;
+            }
         }
-        HostBox.Text = appliances[0].Hostname;
+        catch
+        {
+            // Keep default host if discovery fails.
+        }
     }
 
     private async void Connect_Click(object sender, RoutedEventArgs e)
     {
         ErrorText.Text = "";
         ConnectButton.IsEnabled = false;
+        Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
         try
         {
             var host = HostBox.Text.Trim();
@@ -56,6 +80,7 @@ public partial class LoginWindow : Window
         }
         finally
         {
+            Mouse.OverrideCursor = null;
             ConnectButton.IsEnabled = true;
         }
     }

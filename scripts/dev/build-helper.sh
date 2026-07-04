@@ -9,7 +9,10 @@ OUT="${REPO_ROOT}/helper/publish"
 
 echo "==> Publishing FrogsWork Helper (win-x64, self-contained)..."
 dotnet publish "${PROJECT}" -c Release -r win-x64 --self-contained true \
-  -p:PublishSingleFile=true -o "${OUT}"
+  -p:PublishSingleFile=true \
+  -p:IncludeNativeLibrariesForSelfExtract=true \
+  -p:PublishTrimmed=false \
+  -o "${OUT}"
 
 echo "==> Output: ${OUT}/FrogsWork.Helper.exe"
 

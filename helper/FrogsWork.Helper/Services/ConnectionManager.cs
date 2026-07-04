@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using FrogsWork.Helper.Api;
 using FrogsWork.Helper.DriveMapping;
 
@@ -24,11 +26,49 @@ public sealed class ConnectionManager
             var suggested = mount.SuggestedLetter.Length > 0 ? mount.SuggestedLetter[0] : 'U';
             var letter = DriveMapper.ResolveLetter(suggested, reserved);
             reserved.Add(letter);
-            DriveMapper.MapDrive(letter, mount.UncPath, session.Username, session.Password, persist: true);
+            var uncPath = ResolveUncPath(mount.UncPath, session.Host);
+            DriveMapper.MapDrive(letter, uncPath, session.Username, session.Password, persist: true);
             _mappedLetters.Add(letter);
         }
 
         SessionStore.Save(session);
+    }
+
+    private static string ResolveUncPath(string uncPath, string fallbackHost)
+    {
+        if (!uncPath.StartsWith(@"\\", StringComparison.Ordinal))
+        {
+            return uncPath;
+        }
+
+        var parts = uncPath.Split('\\', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 2)
+        {
+            return uncPath;
+        }
+
+        var host = parts[0];
+        var share = parts[1];
+        try
+        {
+            var addresses = Dns.GetHostAddresses(host);
+            var ip = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+            if (ip is not null)
+            {
+                return $@"\\{ip}\{share}";
+            }
+        }
+        catch
+        {
+            // fall through
+        }
+
+        if (IPAddress.TryParse(fallbackHost, out _))
+        {
+            return $@"\\{fallbackHost}\{share}";
+        }
+
+        return uncPath;
     }
 
     public void DisconnectAll()
