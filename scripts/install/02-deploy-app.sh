@@ -62,13 +62,15 @@ echo "# placeholder — dynamic shares added in M4" > /etc/samba/shares.d/00-pla
 echo "==> Setting ownership on ${INSTALL_ROOT}..."
 chown -R root:root "${INSTALL_ROOT}"
 chmod -R a+rX "${REPO_ROOT}/backend"
-chmod -R a+rX "${REPO_ROOT}/dashboard/dist"
+chmod -R a+rX "${REPO_ROOT}/dashboard"
 # Allow deploy user to rsync updates (dev only; tighten in M9 if needed).
 DEPLOY_USER="${SUDO_USER:-${FROGSWORK_DEPLOY_USER:-korra}}"
 if id "${DEPLOY_USER}" &>/dev/null; then
   chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_ROOT}"
 fi
+# nginx (www-data) must traverse dashboard/ and read dist/ after chown to deploy user.
 chmod -R a+rX "${REPO_ROOT}/backend"
+chmod -R a+rX "${REPO_ROOT}/dashboard"
 
 echo "==> Installing sudoers for integration commands..."
 install -m 644 "${REPO_ROOT}/deploy/sudoers/frogswork-integrations" /etc/sudoers.d/frogswork-integrations

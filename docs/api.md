@@ -40,7 +40,7 @@ Protected routes use header: `Authorization: Bearer <access_token>`
 | GET | `/api/users` | List file users |
 | POST | `/api/users` | Create file user + Linux/Samba sync |
 | GET | `/api/users/{id}` | Get file user |
-| PATCH | `/api/users/{id}` | Update display name, password, super-user, quota |
+| PATCH | `/api/users/{id}` | Update display name, password, super-user, quota, folder permissions |
 | DELETE | `/api/users/{id}` | Delete file user + system cleanup |
 
 ### POST `/api/users`
@@ -56,6 +56,78 @@ Protected routes use header: `Authorization: Bearer <access_token>`
 ```
 
 Usernames: 3–32 chars, lowercase letter first, letters/digits/underscore. Creates `/data/users/{username}` (btrfs subvolume), Linux account, and Samba password. Super-users join `frogswork-superuser` (read-only on others' private folders).
+
+### PATCH `/api/users/{id}` — folder permissions (optional)
+
+```json
+{
+  "folder_permissions": [
+    { "folder_id": 1, "access": "read" },
+    { "folder_id": 2, "access": "read_write" }
+  ]
+}
+```
+
+Replaces all folder permissions for that user. Access is `read` or `read_write`.
+
+## Shared folders (dashboard admin only)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/folders` | List shared folders with permission summary |
+| POST | `/api/folders` | Create folder on disk + Samba fragment |
+| GET | `/api/folders/{id}` | Get folder |
+| PATCH | `/api/folders/{id}` | Rename folder |
+| DELETE | `/api/folders/{id}` | Delete empty folder |
+| PUT | `/api/folders/{id}/permissions` | Replace permission matrix for folder |
+
+SMB share names follow `shared-{FolderName}` (e.g. `\\frogswork.local\shared-Projects`). Permissions sync to POSIX ACLs (`read` → `r-x`, `read_write` → `rwx`) and Samba `valid users`.
+
+### PUT `/api/folders/{id}/permissions`
+
+```json
+{
+  "permissions": [
+    { "user_id": 1, "access": "read" },
+    { "user_id": 2, "access": "read_write" }
+  ]
+}
+```
+
+Returns the updated permission list with usernames.
+
+## Storage (dashboard admin only)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/storage` | Data volume usage + counts |
+
+### GET `/api/storage`
+
+```json
+{
+  "mount": "/data",
+  "total_bytes": 330000000000,
+  "used_bytes": 1200000000,
+  "free_bytes": 328800000000,
+  "file_user_count": 2,
+  "shared_folder_count": 3
+}
+```
+
+## Snapshots (dashboard admin only)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/snapshots` | List snapshots |
+| POST | `/api/snapshots` | Create manual daily snapshot |
+| GET | `/api/snapshots/settings` | Schedule hour + retention counts |
+| PATCH | `/api/snapshots/settings` | Update schedule/retention |
+| GET | `/api/snapshots/{id}/browse` | List files/folders inside snapshot |
+| GET | `/api/snapshots/{id}/restore-token` | Get confirmation token for restore |
+| POST | `/api/snapshots/{id}/restore` | Restore file or folder path |
+
+Restore requires the `confirm_token` from the restore-token endpoint (prevents accidental overwrites).
 
 ## Example flow (curl)
 
