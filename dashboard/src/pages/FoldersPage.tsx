@@ -10,6 +10,7 @@ import { listUsers } from "../api/users";
 import { ApiRequestError } from "../api/client";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { Loading } from "../components/Loading";
+import { PageIntro } from "../components/PageIntro";
 import type { FileUser, FolderAccess, SharedFolder } from "../types";
 
 type UserAccessMap = Record<number, FolderAccess | "none">;
@@ -125,17 +126,15 @@ export function FoldersPage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <h1>Shared folders</h1>
-          <p className="lede">
-            Team folders appear in File Explorer as <code>\\frogswork.local\shared-Name</code>.
-          </p>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={() => setCreating((v) => !v)}>
-          {creating ? "Cancel" : "Add folder"}
-        </button>
-      </header>
+      <PageIntro
+        title="Shared folders"
+        lede="Folders your team can open together — like Projects or Invoices."
+        action={
+          <button type="button" className="btn btn-primary" onClick={() => setCreating((v) => !v)}>
+            {creating ? "Cancel" : "Add folder"}
+          </button>
+        }
+      />
 
       <ErrorBanner message={error} />
 

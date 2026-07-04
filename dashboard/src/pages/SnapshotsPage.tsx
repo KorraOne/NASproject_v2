@@ -12,6 +12,7 @@ import {
 import { ApiRequestError } from "../api/client";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { Loading } from "../components/Loading";
+import { PageIntro } from "../components/PageIntro";
 import type { SnapshotBrowseEntry, SnapshotSettings } from "../types";
 
 function kindLabel(kind: string): string {
@@ -123,18 +124,15 @@ export function SnapshotsPage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <h1>Snapshots</h1>
-          <p className="lede">
-            Point-in-time copies of your files. Nightly snapshots run automatically; restore deleted files
-            from here.
-          </p>
-        </div>
-        <button type="button" className="btn btn-primary" disabled={busy} onClick={onCreate}>
-          {busy ? "Working…" : "Create snapshot now"}
-        </button>
-      </header>
+      <PageIntro
+        title="Backups"
+        lede="Restore older versions of files. A backup runs automatically every night."
+        action={
+          <button type="button" className="btn btn-primary" disabled={busy} onClick={onCreate}>
+            {busy ? "Working…" : "Create backup now"}
+          </button>
+        }
+      />
 
       <ErrorBanner message={error} />
 

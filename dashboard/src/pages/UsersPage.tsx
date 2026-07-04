@@ -3,7 +3,9 @@ import { listFolders } from "../api/folders";
 import { createUser, deleteUser, listUsers, updateUser } from "../api/users";
 import { ApiRequestError, formatBytes } from "../api/client";
 import { ErrorBanner } from "../components/ErrorBanner";
+import { GettingStartedBanner } from "../components/GettingStartedBanner";
 import { Loading } from "../components/Loading";
+import { PageIntro } from "../components/PageIntro";
 import type { FileUser, FolderAccess, SharedFolder, UserFolderPermission } from "../types";
 
 type PermissionMap = Record<number, FolderAccess | "none">;
@@ -177,15 +179,17 @@ export function UsersPage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <h1>File users</h1>
-          <p className="lede">People who sign in via the helper app or File Explorer to access files.</p>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={openCreate}>
-          Add user
-        </button>
-      </header>
+      <PageIntro
+        title="People"
+        lede="Add team members who need their own files and access to shared folders."
+        action={
+          <button type="button" className="btn btn-primary" onClick={openCreate}>
+            Add user
+          </button>
+        }
+      />
+
+      {users.length === 0 ? <GettingStartedBanner /> : null}
 
       <ErrorBanner message={error} />
 

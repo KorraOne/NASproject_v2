@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ApiRequestError } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { AuthBrand } from "../components/AuthBrand";
 import { ErrorBanner } from "../components/ErrorBanner";
 
 export function LoginPage() {
@@ -28,12 +29,14 @@ export function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1>Sign in</h1>
-        <p className="lede">Enter your dashboard admin password.</p>
+        <AuthBrand
+          title="Sign in"
+          subtitle="Use the owner password you chose during setup."
+        />
         <ErrorBanner message={error} />
         <form onSubmit={onSubmit} className="stack-form">
           <label>
-            Password
+            Dashboard password
             <input
               type="password"
               autoComplete="current-password"

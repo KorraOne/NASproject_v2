@@ -3,6 +3,7 @@ import { getStorageOverview } from "../api/storage";
 import { ApiRequestError, formatBytes, formatPercent } from "../api/client";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { Loading } from "../components/Loading";
+import { PageIntro } from "../components/PageIntro";
 import type { StorageOverview } from "../types";
 
 export function StoragePage() {
@@ -33,15 +34,15 @@ export function StoragePage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <div>
-          <h1>Storage</h1>
-          <p className="lede">Disk space on the data volume where files and snapshots live.</p>
-        </div>
-        <button type="button" className="btn btn-ghost" onClick={load}>
-          Refresh
-        </button>
-      </header>
+      <PageIntro
+        title="Storage"
+        lede="How much space your files and backups are using."
+        action={
+          <button type="button" className="btn btn-ghost" onClick={load}>
+            Refresh
+          </button>
+        }
+      />
 
       <ErrorBanner message={error} />
 
