@@ -11,6 +11,7 @@ PACKAGES=(
   nginx
   samba
   samba-common-bin
+  smbclient
   btrfs-progs
   acl
   avahi-daemon

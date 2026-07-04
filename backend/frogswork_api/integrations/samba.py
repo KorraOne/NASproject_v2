@@ -12,10 +12,13 @@ def verify_password(username: str, password: str) -> bool:
     """Return True if credentials are valid for SMB (and thus file-user login)."""
     if os.environ.get("FROGSWORK_SKIP_SYSTEM") == "1":
         return True
+    smbclient = "/usr/bin/smbclient"
+    if not os.path.isfile(smbclient):
+        return False
     try:
         result = subprocess.run(
             [
-                "smbclient",
+                smbclient,
                 "-L",
                 "//127.0.0.1",
                 "-U",
@@ -28,7 +31,7 @@ def verify_password(username: str, password: str) -> bool:
             check=False,
         )
         return result.returncode == 0
-    except FileNotFoundError:
+    except OSError:
         return False
 
 
