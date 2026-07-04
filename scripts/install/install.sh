@@ -9,4 +9,5 @@ bash "${SCRIPT_DIR}/00-prereqs.sh"
 bash "${SCRIPT_DIR}/01-partition.sh"
 bash "${SCRIPT_DIR}/02-deploy-app.sh"
 bash "${SCRIPT_DIR}/03-enable-services.sh"
+find "${SCRIPT_DIR}/.." -name '*.sh' -exec chmod +x {} +
 echo "==> FrogsWork install complete."

@@ -29,9 +29,9 @@ VERSION           Release version (currently 0.0.0-dev)
 
 ## Status
 
-**M1 (provisioning)** — complete on NUC `nuc1`. Health: `http://192.168.0.232/api/health`
+**M2 (backend core)** — complete. Setup wizard + admin auth live on NUC.
 
-**M2** — setup wizard and SQLite. Guide: [`docs/dev-steps/M2.md`](docs/dev-steps/M2.md).
+**M3** — file users + Samba sync. Guide: [`docs/dev-steps/M3.md`](docs/dev-steps/M3.md).
 
 ## Dev prerequisites (Windows laptop)
 

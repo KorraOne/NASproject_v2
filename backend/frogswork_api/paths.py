@@ -12,6 +12,8 @@ DATA_SHARED = DATA_ROOT / "shared"
 DATA_SNAPSHOTS = DATA_ROOT / ".snapshots"
 
 STATE_DIR = Path("/var/lib/frogswork")
+DB_PATH = STATE_DIR / "frogswork.db"
+JWT_SECRET_FILE = STATE_DIR / "jwt_secret"
 
 
 def read_version() -> str:

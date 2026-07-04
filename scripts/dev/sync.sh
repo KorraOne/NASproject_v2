@@ -46,7 +46,7 @@ echo "==> Normalising shell script line endings..."
 ssh "${HOST}" "find ${INSTALL_ROOT}/scripts -name '*.sh' -exec sed -i 's/\\r$//' {} +"
 
 echo "==> Running deploy on ${HOST}..."
-ssh "${HOST}" "sudo ${INSTALL_ROOT}/scripts/install/02-deploy-app.sh && sudo ${INSTALL_ROOT}/scripts/install/03-enable-services.sh"
+ssh "${HOST}" "sudo bash ${INSTALL_ROOT}/scripts/install/02-deploy-app.sh && sudo bash ${INSTALL_ROOT}/scripts/install/03-enable-services.sh"
 
 echo "==> Health check..."
 ssh "${HOST}" "curl -sf http://localhost/api/health" && echo

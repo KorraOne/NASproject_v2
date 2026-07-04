@@ -69,6 +69,12 @@ if id "${DEPLOY_USER}" &>/dev/null; then
   chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_ROOT}"
 fi
 
+echo "==> Data directory ownership for API (frogswork user)..."
+if mountpoint -q /data; then
+  chown frogswork:frogswork /data/users /data/shared 2>/dev/null || true
+  chmod 755 /data/users /data/shared
+fi
+
 systemctl daemon-reload
 nginx -t
 
