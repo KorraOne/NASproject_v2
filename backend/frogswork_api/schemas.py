@@ -145,6 +145,32 @@ class SnapshotConfirmTokenResponse(BaseModel):
     source_path: str
 
 
+class SystemInfoResponse(BaseModel):
+    hostname: str
+    ips: list[str]
+    uptime_seconds: float
+    data_mount: str
+    data_total_bytes: int
+    data_used_bytes: int
+    data_free_bytes: int
+    os_total_bytes: int
+    os_used_bytes: int
+    os_free_bytes: int
+    version: str
+
+
+class SshStatusResponse(BaseModel):
+    remote_enabled: bool
+
+
+class SshToggleRequest(BaseModel):
+    enabled: bool
+
+
+class PowerConfirmRequest(BaseModel):
+    confirm: bool = False
+
+
 FileUserUpdateRequest.model_rebuild()
 FolderPermissionsReplaceRequest.model_rebuild()
 

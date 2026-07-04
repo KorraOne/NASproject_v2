@@ -18,7 +18,7 @@ systemctl restart smbd.service nmbd.service 2>/dev/null || systemctl restart smb
 echo "==> Service status:"
 systemctl is-active frogswork-api nginx avahi-daemon smbd || true
 
-echo "==> SSH: remote access left as-is for development (hard toggle lands in M7)."
+echo "==> SSH: remote access managed by FrogsWork dashboard (default off via sshd drop-in)."
 
 echo "==> 03-enable-services.sh complete."
 echo "    Smoke test: curl -s http://localhost/api/health"

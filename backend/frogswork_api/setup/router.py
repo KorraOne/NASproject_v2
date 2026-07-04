@@ -18,6 +18,7 @@ from frogswork_api.config import (
 from frogswork_api.db import connect, is_setup_complete, set_setting, utc_now_iso
 from frogswork_api.paths import DATA_SHARED
 from frogswork_api.schemas import SetupRequest, SetupResponse, SetupStatusResponse
+from frogswork_api.services.system import init_ssh_for_new_setup
 
 router = APIRouter(prefix="/api/setup", tags=["setup"])
 
@@ -77,6 +78,7 @@ def setup_status() -> SetupStatusResponse:
 @router.post("", response_model=SetupResponse)
 def complete_setup(body: SetupRequest) -> SetupResponse:
     run_setup(body.password, body.timezone)
+    init_ssh_for_new_setup()
     return SetupResponse(
         setup_complete=True,
         message="Setup complete. Sign in with your dashboard admin password.",

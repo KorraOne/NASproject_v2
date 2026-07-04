@@ -428,3 +428,7 @@ select:focus {
 .link-btn:hover {
   color: var(--primary-hover);
 }
+
+.ssh-toggle {
+  margin-top: 0.75rem;
+}

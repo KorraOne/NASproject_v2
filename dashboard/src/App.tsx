@@ -7,6 +7,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { SetupPage } from "./pages/SetupPage";
 import { SnapshotsPage } from "./pages/SnapshotsPage";
 import { StoragePage } from "./pages/StoragePage";
+import { SystemPage } from "./pages/SystemPage";
 import { UsersPage } from "./pages/UsersPage";
 
 function AppRoutes() {
@@ -45,6 +46,7 @@ function AppRoutes() {
         <Route path="/folders" element={<FoldersPage />} />
         <Route path="/storage" element={<StoragePage />} />
         <Route path="/snapshots" element={<SnapshotsPage />} />
+        <Route path="/system" element={<SystemPage />} />
         <Route path="/" element={<Navigate to="/users" replace />} />
         <Route path="*" element={<Navigate to="/users" replace />} />
       </Route>

@@ -29,9 +29,9 @@ export function Layout() {
           <NavLink to="/snapshots" className={({ isActive }) => (isActive ? "active" : undefined)}>
             Snapshots
           </NavLink>
-          <span className="nav-disabled" title="Coming in a later update">
+          <NavLink to="/system" className={({ isActive }) => (isActive ? "active" : undefined)}>
             System
-          </span>
+          </NavLink>
         </nav>
         <button type="button" className="btn btn-ghost" onClick={() => logout()}>
           Sign out

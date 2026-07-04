@@ -129,6 +129,18 @@ Returns the updated permission list with usernames.
 
 Restore requires the `confirm_token` from the restore-token endpoint (prevents accidental overwrites).
 
+## System (dashboard admin only)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/system/info` | Hostname, IPs, uptime, disk usage, version |
+| GET | `/api/system/ssh` | Remote SSH enabled state |
+| POST | `/api/system/ssh` | `{ "enabled": true \| false }` |
+| POST | `/api/system/reboot` | `{ "confirm": true }` |
+| POST | `/api/system/shutdown` | `{ "confirm": true }` |
+
+Remote SSH is **off by default** on new setups (`AllowUsers` drop-in). Upgraded appliances keep existing SSH until toggled in the dashboard.
+
 ## Example flow (curl)
 
 ```bash
