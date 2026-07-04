@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import os
-import re
 import socket
+import subprocess
 from pathlib import Path
 
-from frogswork_api.integrations._run import IntegrationError, run_cmd
-from frogswork_api.paths import DATA_ROOT, STATE_DIR
+from frogswork_api.integrations._run import run_cmd
+from frogswork_api.paths import STATE_DIR
 
 SSH_DROPIN = Path("/etc/ssh/sshd_config.d/frogswork.conf")
 SSH_STAGING = STATE_DIR / "sshd-frogswork.conf"
@@ -34,8 +34,16 @@ def read_uptime_seconds() -> float:
 def read_primary_ips() -> list[str]:
     if _skip_system():
         return ["127.0.0.1"]
-    result = run_cmd("hostname", "-I")
-    return [part for part in result.stdout.split() if part]
+    try:
+        result = subprocess.run(
+            ["hostname", "-I"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return [part for part in result.stdout.split() if part]
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return []
 
 
 def read_hostname() -> str:

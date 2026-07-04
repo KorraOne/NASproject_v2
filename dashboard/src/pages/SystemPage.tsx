@@ -32,9 +32,14 @@ export function SystemPage() {
     setLoading(true);
     setError(null);
     try {
-      const [systemInfo, ssh] = await Promise.all([getSystemInfo(), getSshStatus()]);
+      const systemInfo = await getSystemInfo();
       setInfo(systemInfo);
-      setSshEnabled(ssh.remote_enabled);
+      try {
+        const ssh = await getSshStatus();
+        setSshEnabled(ssh.remote_enabled);
+      } catch {
+        // SSH status is optional if integration is unavailable
+      }
     } catch (err) {
       setError(err instanceof ApiRequestError ? err.message : "Could not load system info.");
     } finally {
