@@ -46,3 +46,17 @@ def test_helper_mounts_requires_auth(client, setup_complete):
 def test_helper_download_missing(client):
     response = client.get("/api/helper/download")
     assert response.status_code == 404
+
+
+def test_helper_download_exists(client, tmp_path, monkeypatch):
+    helper_dir = tmp_path / "helper"
+    helper_dir.mkdir()
+    exe = helper_dir / "FrogsWork.Helper.exe"
+    exe.write_bytes(b"MZ-fake-helper")
+
+    monkeypatch.setattr("frogswork_api.helper.router.HELPER_EXE", exe)
+
+    response = client.get("/api/helper/download")
+    assert response.status_code == 200
+    assert response.content == b"MZ-fake-helper"
+    assert "FrogsWork.Helper.exe" in response.headers.get("content-disposition", "")

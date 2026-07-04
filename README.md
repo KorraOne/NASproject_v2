@@ -29,9 +29,11 @@ VERSION           Release version (currently 0.0.0-dev)
 
 ## Status
 
-**M3 (file users + Samba)** — complete. Create users via `/api/users`; SMB auth ready.
+**M8 (Windows helper)** — complete. File users connect via helper; drives map in Explorer.
 
-**M4** — shared folder permissions. Guide: [`docs/dev-steps/M4.md`](docs/dev-steps/M4.md).
+**M9 (manufacturing hardening)** — in progress. Guide: [`docs/dev-steps/M9.md`](docs/dev-steps/M9.md).
+
+Milestones M0–M8: [`docs/dev-steps/README.md`](docs/dev-steps/README.md).
 
 ## Dev prerequisites (Windows laptop)
 
@@ -60,4 +62,4 @@ dotnet build
 
 ## Hardware
 
-Asus NUC 14 Essential, Ubuntu Server 24.04 LTS, single 480 GB NVMe (OS + btrfs data volume).
+Asus NUC 14 Essential, Ubuntu Server 26.04 LTS (24.04 also supported), single 480 GB NVMe (OS + btrfs data volume).

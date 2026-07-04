@@ -13,7 +13,7 @@ Step-by-step guides for implementing each milestone (M0–M9). **Update the rele
 | M6 | [M6.md](M6.md) | Complete |
 | M7 | [M7.md](M7.md) | Complete |
 | M8 | [M8.md](M8.md) | Complete |
-| M9 | [M9.md](M9.md) | Not started |
+| M9 | [M9.md](M9.md) | In progress |
 
 ## Convention
 

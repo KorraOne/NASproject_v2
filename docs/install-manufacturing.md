@@ -1,6 +1,6 @@
 # Manufacturing install
 
-Step-by-step provisioning for a fresh Asus NUC. Tested on **Ubuntu Server 26.04 LTS** with the default LVM installer layout.
+Step-by-step provisioning for a fresh Asus NUC. Tested on **Ubuntu Server 26.04 LTS** (24.04 LTS also supported) with the default LVM installer layout.
 
 ## Prerequisites
 
@@ -48,13 +48,20 @@ Install script order:
 
 ## 3. Smoke test checklist
 
+### Automated (on NUC)
+
+```bash
+sudo bash /opt/frogswork/scripts/dev/smoke-m9.sh
+```
+
+This runs health checks, M2–M4 user/folder smoke, Samba manifest + `shared-Projects`, snapshot API, and helper download.
+
+### Quick manual checks
+
 ```bash
 curl -s http://localhost/api/health
-# {"status":"ok","version":"0.0.0-dev"}
-
 systemctl is-active frogswork-api nginx avahi-daemon smbd
 df -h /data
-testparm -s
 ```
 
 From laptop on LAN:
@@ -63,6 +70,28 @@ From laptop on LAN:
 curl http://<nuc-ip>/api/health
 # Browser: http://frogswork.local or http://<nuc-ip>
 ```
+
+### Dashboard (owner)
+
+- [ ] Complete setup wizard (password + timezone)
+- [ ] Sign in to dashboard
+- [ ] Create a file user on **Users**
+- [ ] Create or edit a shared folder on **Folders**
+- [ ] View **Storage** overview
+- [ ] Create a snapshot and browse files on **Snapshots**
+- [ ] **System** page shows network info and helper download
+
+### Windows helper (employee)
+
+- [ ] Download helper from **System** page or `/api/helper/download`
+- [ ] Install and connect with file user credentials
+- [ ] `U:` (home) and shared drives appear in File Explorer
+- [ ] Create and edit a file in Explorer
+
+### Reboot survival
+
+- [ ] Reboot NUC — services auto-start, dashboard and Samba work without manual steps
+- [ ] (Optional) Reboot Windows PC — helper reconnects or reconnects easily
 
 ## 4. Development deploy loop
 

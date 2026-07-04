@@ -30,3 +30,12 @@ def test_me_with_token(client, setup_complete):
     )
     assert response.status_code == 200
     assert response.json()["role"] == "dashboard_admin"
+
+
+def test_logout(client, setup_complete):
+    login = client.post("/api/auth/login", json={"password": "test-admin-pass"})
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    response = client.post("/api/auth/logout", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["message"] == "Signed out."
