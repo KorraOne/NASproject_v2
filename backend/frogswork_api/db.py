@@ -39,6 +39,14 @@ CREATE TABLE IF NOT EXISTS file_users (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS folder_permissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_user_id INTEGER NOT NULL REFERENCES file_users(id) ON DELETE CASCADE,
+    shared_folder_id INTEGER NOT NULL REFERENCES shared_folders(id) ON DELETE CASCADE,
+    access TEXT NOT NULL CHECK (access IN ('read', 'read_write')),
+    UNIQUE (file_user_id, shared_folder_id)
+);
 """
 
 

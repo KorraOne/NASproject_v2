@@ -14,6 +14,8 @@ DATA_SNAPSHOTS = DATA_ROOT / ".snapshots"
 STATE_DIR = Path("/var/lib/frogswork")
 DB_PATH = STATE_DIR / "frogswork.db"
 JWT_SECRET_FILE = STATE_DIR / "jwt_secret"
+SAMBA_SHARES_STAGING = STATE_DIR / "samba-shares"
+SAMBA_SHARES_D = Path("/etc/samba/shares.d")
 
 
 def read_version() -> str:

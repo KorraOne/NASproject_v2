@@ -17,7 +17,17 @@ def client(tmp_path, monkeypatch):
 
     monkeypatch.setenv("FROGSWORK_DB_PATH", str(db_path))
     monkeypatch.setenv("FROGSWORK_JWT_SECRET", "test-jwt-secret-key-for-pytest-only")
+    monkeypatch.setenv("FROGSWORK_SKIP_SYSTEM", "1")
     monkeypatch.setattr("frogswork_api.setup.router.DATA_SHARED", data_shared)
+    monkeypatch.setattr("frogswork_api.services.folders.DATA_SHARED", data_shared)
+    monkeypatch.setattr("frogswork_api.paths.DATA_SHARED", data_shared)
+
+    samba_staging = tmp_path / "samba-staging"
+    samba_d = tmp_path / "shares.d"
+    samba_staging.mkdir()
+    samba_d.mkdir()
+    monkeypatch.setattr("frogswork_api.integrations.samba_shares.SAMBA_SHARES_STAGING", samba_staging)
+    monkeypatch.setattr("frogswork_api.integrations.samba_shares.SAMBA_SHARES_D", samba_d)
 
     init_db(db_path)
     with TestClient(app) as test_client:

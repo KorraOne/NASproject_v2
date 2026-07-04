@@ -10,6 +10,7 @@ from fastapi import HTTPException, status
 from frogswork_api.db import connect, utc_now_iso
 from frogswork_api.integrations import linux_users, samba
 from frogswork_api.integrations._run import IntegrationError
+from frogswork_api.services import permissions as permission_service
 
 USERNAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]{2,31}$")
 MIN_FILE_USER_PASSWORD_LENGTH = 8
@@ -197,6 +198,13 @@ def delete_user(user_id: int) -> None:
     with connect() as conn:
         existing = get_user(conn, user_id)
         username = existing["username"]
+        affected_folders = [
+            row["shared_folder_id"]
+            for row in conn.execute(
+                "SELECT shared_folder_id FROM folder_permissions WHERE file_user_id = ?",
+                (user_id,),
+            ).fetchall()
+        ]
 
     try:
         samba.delete_user(username)
@@ -210,3 +218,5 @@ def delete_user(user_id: int) -> None:
 
     with connect() as conn:
         conn.execute("DELETE FROM file_users WHERE id = ?", (user_id,))
+        for folder_id in affected_folders:
+            permission_service.sync_folder_to_system(conn, folder_id)

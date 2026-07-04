@@ -14,6 +14,7 @@ from frogswork_api.schemas import (
     FileUserUpdateRequest,
     MessageResponse,
 )
+from frogswork_api.services import permissions as permission_service
 from frogswork_api.services import users as user_service
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -56,7 +57,8 @@ def update_user(
     _admin: Annotated[str, Depends(get_current_admin)],
 ) -> FileUserResponse:
     updates = body.model_dump(exclude_unset=True)
-    return user_service.update_user(
+    folder_permissions = updates.pop("folder_permissions", None)
+    result = user_service.update_user(
         user_id,
         display_name=updates.get("display_name"),
         password=updates.get("password"),
@@ -64,6 +66,14 @@ def update_user(
         quota_bytes=updates.get("quota_bytes"),
         update_quota="quota_bytes" in updates,
     )
+    if folder_permissions is not None:
+        permission_service.replace_user_permissions(
+            user_id,
+            [{"folder_id": p["folder_id"], "access": p["access"]} for p in folder_permissions],
+        )
+        with connect() as conn:
+            return user_service.get_user(conn, user_id)
+    return result
 
 
 @router.delete("/{user_id}", response_model=MessageResponse)
