@@ -29,9 +29,9 @@ VERSION           Release version (currently 0.0.0-dev)
 
 ## Status
 
-**M2 (backend core)** — complete. Setup wizard + admin auth live on NUC.
+**M3 (file users + Samba)** — complete. Create users via `/api/users`; SMB auth ready.
 
-**M3** — file users + Samba sync. Guide: [`docs/dev-steps/M3.md`](docs/dev-steps/M3.md).
+**M4** — shared folder permissions. Guide: [`docs/dev-steps/M4.md`](docs/dev-steps/M4.md).
 
 ## Dev prerequisites (Windows laptop)
 

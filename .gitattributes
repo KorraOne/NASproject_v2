@@ -1,1 +1,2 @@
 *.sh text eol=lf
+deploy/sudoers/* text eol=lf

@@ -1,0 +1,8 @@
+# Allow frogswork API to manage file users and Samba (passwordless sudo).
+Cmnd_Alias FROGSWORK_USER = /usr/sbin/useradd, /usr/sbin/userdel, /usr/sbin/usermod, /usr/sbin/groupadd, /usr/sbin/gpasswd
+Cmnd_Alias FROGSWORK_SAMBA = /usr/bin/smbpasswd
+Cmnd_Alias FROGSWORK_ACL = /usr/bin/setfacl, /usr/bin/chown
+Cmnd_Alias FROGSWORK_BTRFS = /usr/bin/btrfs
+Cmnd_Alias FROGSWORK_SAMBA_RELOAD = /usr/bin/systemctl reload smbd, /usr/bin/systemctl reload nmbd
+
+frogswork ALL=(root) NOPASSWD: FROGSWORK_USER, FROGSWORK_SAMBA, FROGSWORK_ACL, FROGSWORK_BTRFS, FROGSWORK_SAMBA_RELOAD

@@ -68,6 +68,13 @@ DEPLOY_USER="${SUDO_USER:-${FROGSWORK_DEPLOY_USER:-korra}}"
 if id "${DEPLOY_USER}" &>/dev/null; then
   chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_ROOT}"
 fi
+chmod -R a+rX "${REPO_ROOT}/backend"
+
+echo "==> Installing sudoers for integration commands..."
+install -m 644 "${REPO_ROOT}/deploy/sudoers/frogswork-integrations" /etc/sudoers.d/frogswork-integrations
+sed -i 's/\r$//' /etc/sudoers.d/frogswork-integrations
+chmod 440 /etc/sudoers.d/frogswork-integrations
+visudo -cf /etc/sudoers.d/frogswork-integrations
 
 echo "==> Data directory ownership for API (frogswork user)..."
 if mountpoint -q /data; then

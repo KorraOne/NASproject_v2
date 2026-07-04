@@ -33,6 +33,30 @@ Creates dashboard admin, seeds shared folders (Projects, Invoices, Shared), sets
 
 Protected routes use header: `Authorization: Bearer <access_token>`
 
+## File users (dashboard admin only)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/users` | List file users |
+| POST | `/api/users` | Create file user + Linux/Samba sync |
+| GET | `/api/users/{id}` | Get file user |
+| PATCH | `/api/users/{id}` | Update display name, password, super-user, quota |
+| DELETE | `/api/users/{id}` | Delete file user + system cleanup |
+
+### POST `/api/users`
+
+```json
+{
+  "username": "alice",
+  "display_name": "Alice",
+  "password": "employee-pass",
+  "is_superuser": false,
+  "quota_bytes": null
+}
+```
+
+Usernames: 3–32 chars, lowercase letter first, letters/digits/underscore. Creates `/data/users/{username}` (btrfs subvolume), Linux account, and Samba password. Super-users join `frogswork-superuser` (read-only on others' private folders).
+
 ## Example flow (curl)
 
 ```bash

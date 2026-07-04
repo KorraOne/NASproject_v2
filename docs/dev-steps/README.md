@@ -7,7 +7,7 @@ Step-by-step guides for implementing each milestone (M0–M9). **Update the rele
 | M0 | [M0.md](M0.md) | Complete |
 | M1 | [M1.md](M1.md) | Complete |
 | M2 | [M2.md](M2.md) | Complete |
-| M3 | [M3.md](M3.md) | Not started |
+| M3 | [M3.md](M3.md) | Complete |
 | M4 | [M4.md](M4.md) | Not started |
 | M5 | [M5.md](M5.md) | Not started |
 | M6 | [M6.md](M6.md) | Not started |

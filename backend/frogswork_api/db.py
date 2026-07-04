@@ -29,6 +29,16 @@ CREATE TABLE IF NOT EXISTS shared_folders (
     path TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS file_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    display_name TEXT NOT NULL,
+    is_superuser INTEGER NOT NULL DEFAULT 0,
+    quota_bytes INTEGER,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 """
 
 
