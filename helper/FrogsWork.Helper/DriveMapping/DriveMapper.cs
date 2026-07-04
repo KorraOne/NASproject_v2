@@ -40,6 +40,9 @@ public static class DriveMapper
     public static void MapDrive(char letter, string uncPath, string username, string password, bool persist = true)
     {
         var localName = $"{letter}:";
+        TryDisconnectRemote(uncPath);
+        NativeMethods.WNetCancelConnection2(localName, 0, true);
+
         var resource = new NativeMethods.NetResource
         {
             Scope = NativeMethods.ResourceGlobalNet,
@@ -54,6 +57,11 @@ public static class DriveMapper
         {
             throw new Win32Exception(result);
         }
+    }
+
+    public static void TryDisconnectRemote(string uncPath)
+    {
+        NativeMethods.WNetCancelConnection2(uncPath, 0, true);
     }
 
     public static void Disconnect(char letter, bool force = true)

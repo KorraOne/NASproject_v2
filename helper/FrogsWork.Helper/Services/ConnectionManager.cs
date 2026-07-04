@@ -1,5 +1,4 @@
-using System.Net;
-using System.Net.Sockets;
+using System.ComponentModel;
 using FrogsWork.Helper.Api;
 using FrogsWork.Helper.DriveMapping;
 
@@ -21,20 +20,52 @@ public sealed class ConnectionManager
         var mounts = await api.GetMountsAsync(session.Host, cancellationToken);
 
         var reserved = new HashSet<char>();
-        foreach (var mount in mounts.Mounts)
+        var mappedThisSession = new List<char>();
+        try
         {
-            var suggested = mount.SuggestedLetter.Length > 0 ? mount.SuggestedLetter[0] : 'U';
-            var letter = DriveMapper.ResolveLetter(suggested, reserved);
-            reserved.Add(letter);
-            var uncPath = ResolveUncPath(mount.UncPath, session.Host);
-            DriveMapper.MapDrive(letter, uncPath, session.Username, session.Password, persist: true);
-            _mappedLetters.Add(letter);
-        }
+            foreach (var mount in mounts.Mounts)
+            {
+                var suggested = mount.SuggestedLetter.Length > 0 ? mount.SuggestedLetter[0] : 'U';
+                var letter = DriveMapper.ResolveLetter(suggested, reserved);
+                reserved.Add(letter);
+                var uncPath = ResolveUncPath(mount.UncPath, session.Host);
+                try
+                {
+                    DriveMapper.MapDrive(letter, uncPath, session.Username, session.Password, persist: true);
+                }
+                catch (Win32Exception ex)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not map {mount.Label} ({uncPath}): {ex.Message}",
+                        ex);
+                }
 
-        SessionStore.Save(session);
+                mappedThisSession.Add(letter);
+                _mappedLetters.Add(letter);
+            }
+
+            SessionStore.Save(session);
+        }
+        catch
+        {
+            foreach (var letter in mappedThisSession)
+            {
+                try
+                {
+                    DriveMapper.Disconnect(letter);
+                }
+                catch
+                {
+                    // ignore rollback errors
+                }
+            }
+
+            _mappedLetters.Clear();
+            throw;
+        }
     }
 
-    private static string ResolveUncPath(string uncPath, string fallbackHost)
+    private static string ResolveUncPath(string uncPath, string host)
     {
         if (!uncPath.StartsWith(@"\\", StringComparison.Ordinal))
         {
@@ -47,28 +78,7 @@ public sealed class ConnectionManager
             return uncPath;
         }
 
-        var host = parts[0];
-        var share = parts[1];
-        try
-        {
-            var addresses = Dns.GetHostAddresses(host);
-            var ip = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
-            if (ip is not null)
-            {
-                return $@"\\{ip}\{share}";
-            }
-        }
-        catch
-        {
-            // fall through
-        }
-
-        if (IPAddress.TryParse(fallbackHost, out _))
-        {
-            return $@"\\{fallbackHost}\{share}";
-        }
-
-        return uncPath;
+        return $@"\\{host}\{parts[1]}";
     }
 
     public void DisconnectAll()
