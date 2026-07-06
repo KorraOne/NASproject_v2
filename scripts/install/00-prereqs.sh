@@ -21,6 +21,7 @@ PACKAGES=(
   lvm2
   nodejs
   npm
+  network-manager
 )
 
 echo "==> Updating apt cache..."

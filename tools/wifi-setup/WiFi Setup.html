@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FrogsWork WiFi Setup</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input, select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+    button { margin-top: 1.5rem; padding: 0.65rem 1rem; background: #2d6a4f; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+    .hint { color: #5c6f64; font-size: 0.9rem; }
+    .ok { color: #2d6a4f; }
+    .err { color: #b42318; }
+  </style>
+</head>
+<body>
+  <h1>FrogsWork WiFi Setup</h1>
+  <p class="hint">Save your network details to this USB, then plug the USB into your FrogsWork box.</p>
+  <form id="form">
+    <label>Wi-Fi network name
+      <input id="ssid" required autocomplete="off" />
+    </label>
+    <label>Wi-Fi password
+      <input id="password" type="password" required autocomplete="off" />
+    </label>
+    <label>Country
+      <select id="country">
+        <option value="AU">Australia</option>
+        <option value="NZ">New Zealand</option>
+        <option value="US">United States</option>
+        <option value="GB">United Kingdom</option>
+      </select>
+    </label>
+    <button type="submit">Save to USB</button>
+  </form>
+  <p id="msg" class="hint"></p>
+  <script>
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("msg");
+      const payload = {
+        version: 1,
+        wifi: {
+          ssid: document.getElementById("ssid").value.trim(),
+          password: document.getElementById("password").value,
+          country: document.getElementById("country").value,
+        },
+        optional_hostname: "frogswork",
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      try {
+        if (window.showSaveFilePicker) {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: "frogswork-setup.json",
+            types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          msg.textContent = "Saved. Eject the USB safely, plug it into the FrogsWork box, wait 2 minutes.";
+          msg.className = "ok";
+        } else {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "frogswork-setup.json";
+          a.click();
+          msg.textContent = "Downloaded frogswork-setup.json — copy it to this USB root, then plug into the FrogsWork box.";
+          msg.className = "ok";
+        }
+      } catch (err) {
+        msg.textContent = "Could not save: " + err.message;
+        msg.className = "err";
+      }
+    });
+  </script>
+</body>
+</html>

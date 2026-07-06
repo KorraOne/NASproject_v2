@@ -12,7 +12,11 @@ A business buys a pre-configured Asus NUC, plugs it into their network, and mana
 | [`docs/development-behaviour.md`](docs/development-behaviour.md) | How to develop — workflow, git, testing, deployment |
 | [`docs/dev-steps/README.md`](docs/dev-steps/README.md) | **Per-milestone implementation guides** (M0–M9) |
 | [`docs/architecture.md`](docs/architecture.md) | System components and data paths |
-| [`docs/install-manufacturing.md`](docs/install-manufacturing.md) | NUC provisioning (M1+) |
+| [`docs/install-manufacturing.md`](docs/install-manufacturing.md) | NUC provisioning and smoke tests |
+| [`docs/commercial-ship-checklist.md`](docs/commercial-ship-checklist.md) | Ship/no-ship criteria (hand-sold and factory) |
+| [`docs/customer-quick-start.md`](docs/customer-quick-start.md) | Owner quick-start (print with unit) |
+| [`docs/factory-deploy.md`](docs/factory-deploy.md) | Factory line and release tarball |
+| [`docs/warranty-rma.md`](docs/warranty-rma.md) | Warranty and returns |
 | [`docs/api.md`](docs/api.md) | API conventions and endpoint reference |
 
 ## Repository layout
@@ -24,16 +28,22 @@ helper/           C# Windows tray app
 scripts/          Install, btrfs, dev sync scripts
 deploy/           nginx, systemd, avahi templates
 docs/             Architecture, manufacturing, API notes
-VERSION           Release version (currently 0.0.0-dev)
+VERSION           Release version (currently 1.0.0)
 ```
 
 ## Status
 
-**M8 (Windows helper)** — complete. File users connect via helper; drives map in Explorer.
+**v1.0.0** — feature complete. Ship criteria: [`docs/commercial-ship-checklist.md`](docs/commercial-ship-checklist.md).
 
-**M9 (manufacturing hardening)** — in progress. Guide: [`docs/dev-steps/M9.md`](docs/dev-steps/M9.md).
+Milestones M0–M9: [`docs/dev-steps/README.md`](docs/dev-steps/README.md).
 
-Milestones M0–M8: [`docs/dev-steps/README.md`](docs/dev-steps/README.md).
+### Release tag
+
+```bash
+git tag -a v1.0.0 -m "FrogsWork File Storage v1.0.0"
+```
+
+Factory release tarball: `bash scripts/release/build-tarball.sh`
 
 ## Dev prerequisites (Windows laptop)
 

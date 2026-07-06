@@ -9,6 +9,8 @@ from fastapi import APIRouter, Depends
 from frogswork_api.auth.deps import get_current_admin
 from frogswork_api.db import connect
 from frogswork_api.schemas import (
+    FolderArchetypePermissionEntry,
+    FolderArchetypePermissionsReplaceRequest,
     FolderCreateRequest,
     FolderPermissionEntry,
     FolderPermissionsReplaceRequest,
@@ -16,6 +18,7 @@ from frogswork_api.schemas import (
     FolderUpdateRequest,
     MessageResponse,
 )
+from frogswork_api.services import archetypes as archetype_service
 from frogswork_api.services import folders as folder_service
 from frogswork_api.services import permissions as permission_service
 
@@ -33,7 +36,16 @@ def create_folder(
     body: FolderCreateRequest,
     _admin: Annotated[str, Depends(get_current_admin)],
 ) -> FolderResponse:
-    return folder_service.create_folder(body.name)
+    return folder_service.create_folder(
+        body.name,
+        quota_bytes=body.quota_bytes,
+        archetype_permissions=[
+            {"archetype_id": p.archetype_id, "access": p.access}
+            for p in body.archetype_permissions
+        ]
+        if body.archetype_permissions
+        else None,
+    )
 
 
 @router.get("/{folder_id}", response_model=FolderResponse)
@@ -46,15 +58,17 @@ def get_folder(
 
 
 @router.patch("/{folder_id}", response_model=FolderResponse)
-def rename_folder(
+def update_folder(
     folder_id: int,
     body: FolderUpdateRequest,
     _admin: Annotated[str, Depends(get_current_admin)],
 ) -> FolderResponse:
-    if body.name is None:
-        with connect() as conn:
-            return folder_service.get_folder(conn, folder_id)
-    return folder_service.rename_folder(folder_id, body.name)
+    return folder_service.update_folder(
+        folder_id,
+        new_name=body.name,
+        quota_bytes=body.quota_bytes,
+        update_quota="quota_bytes" in body.model_fields_set,
+    )
 
 
 @router.delete("/{folder_id}", response_model=MessageResponse)
@@ -66,6 +80,26 @@ def delete_folder(
         folder = folder_service.get_folder(conn, folder_id)
     folder_service.delete_folder(folder_id)
     return MessageResponse(message=f"Deleted folder '{folder['name']}'.")
+
+
+@router.get("/{folder_id}/archetype-permissions", response_model=list[FolderArchetypePermissionEntry])
+def get_folder_archetype_permissions(
+    folder_id: int,
+    _admin: Annotated[str, Depends(get_current_admin)],
+) -> list[FolderArchetypePermissionEntry]:
+    return archetype_service.get_folder_archetype_permissions(folder_id)
+
+
+@router.put("/{folder_id}/archetype-permissions", response_model=list[FolderArchetypePermissionEntry])
+def replace_folder_archetype_permissions(
+    folder_id: int,
+    body: FolderArchetypePermissionsReplaceRequest,
+    _admin: Annotated[str, Depends(get_current_admin)],
+) -> list[FolderArchetypePermissionEntry]:
+    return archetype_service.replace_folder_archetype_permissions(
+        folder_id,
+        [{"archetype_id": p.archetype_id, "access": p.access} for p in body.permissions],
+    )
 
 
 @router.put("/{folder_id}/permissions", response_model=list[FolderPermissionEntry])

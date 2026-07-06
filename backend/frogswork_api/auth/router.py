@@ -23,13 +23,20 @@ def login(body: LoginRequest) -> LoginResponse:
                 detail="Setup is not complete. Finish the setup wizard first.",
             )
         row = conn.execute(
-            "SELECT password_hash FROM dashboard_admin WHERE id = 1"
+            "SELECT password_hash, email FROM dashboard_admin WHERE id = 1"
         ).fetchone()
         if row is None or not verify_password(body.password, row["password_hash"]):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect password.",
+                detail="Incorrect email or password.",
             )
+        stored_email = row["email"]
+        if stored_email:
+            if not body.email or body.email.strip().lower() != stored_email.lower():
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Incorrect email or password.",
+                )
     token = create_access_token()
     return LoginResponse(access_token=token)
 
@@ -44,4 +51,8 @@ def logout(
 
 @router.get("/me", response_model=AdminMeResponse)
 def me(_admin: Annotated[str, Depends(get_current_admin)]) -> AdminMeResponse:
-    return AdminMeResponse()
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT email FROM dashboard_admin WHERE id = 1"
+        ).fetchone()
+    return AdminMeResponse(email=row["email"] if row else None)

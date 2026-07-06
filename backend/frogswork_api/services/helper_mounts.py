@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import sqlite3
-
 from fastapi import HTTPException, status
 
 from frogswork_api.db import connect
-from frogswork_api.integrations.samba_shares import share_name
-
-SHARED_DRIVE_LETTERS = "STVWXYZ"
+from frogswork_api.paths import PERSONAL_CONTAINER_NAME, SAMBA_SHARE_NAME
 
 
 def get_mounts_for_user(username: str, host: str) -> dict:
@@ -24,28 +20,18 @@ def get_mounts_for_user(username: str, host: str) -> dict:
                 detail="File user not found.",
             )
 
+        personal_share = f"{SAMBA_SHARE_NAME}/{PERSONAL_CONTAINER_NAME}/{user['username']}"
         mounts: list[dict] = [
             {
-                "label": "My files",
-                "share": user["username"],
-                "unc_path": _unc(host, user["username"]),
-                "suggested_letter": "U",
-                "kind": "private",
+                "label": "FrogsWork",
+                "share": SAMBA_SHARE_NAME,
+                "unc_path": _unc(host, SAMBA_SHARE_NAME),
+                "suggested_letter": "W",
+                "kind": "root",
                 "access": "read_write",
+                "personal_path": _unc(host, personal_share),
             }
         ]
-
-        rows = conn.execute(
-            """
-            SELECT sf.name, fp.access
-            FROM folder_permissions fp
-            JOIN shared_folders sf ON sf.id = fp.shared_folder_id
-            WHERE fp.file_user_id = ?
-            ORDER BY sf.name COLLATE NOCASE
-            """,
-            (user["id"],),
-        ).fetchall()
-        mounts.extend(_shared_mounts(host, rows))
 
     return {
         "hostname": host,
@@ -56,25 +42,4 @@ def get_mounts_for_user(username: str, host: str) -> dict:
 
 
 def _unc(host: str, share: str) -> str:
-    return f"\\\\{host}\\{share}"
-
-
-def _shared_mounts(host: str, rows: list[sqlite3.Row]) -> list[dict]:
-    mounts: list[dict] = []
-    letters = iter(SHARED_DRIVE_LETTERS)
-    for row in rows:
-        share = share_name(row["name"])
-        letter = next(letters, None)
-        if letter is None:
-            break
-        mounts.append(
-            {
-                "label": row["name"],
-                "share": share,
-                "unc_path": _unc(host, share),
-                "suggested_letter": letter,
-                "kind": "shared",
-                "access": row["access"],
-            }
-        )
-    return mounts
+    return f"\\\\{host}\\{share.replace('/', '\\')}"

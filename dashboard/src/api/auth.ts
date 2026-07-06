@@ -1,14 +1,18 @@
 import { apiFetch, setToken } from "./client";
 
-export function login(password: string): Promise<{ access_token: string }> {
+export function login(email: string | undefined, password: string): Promise<{ access_token: string }> {
+  const body: { password: string; email?: string } = { password };
+  if (email?.trim()) {
+    body.email = email.trim();
+  }
   return apiFetch("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ password }),
+    body: JSON.stringify(body),
   }, false);
 }
 
-export async function signIn(password: string): Promise<void> {
-  const result = await login(password);
+export async function signIn(email: string | undefined, password: string): Promise<void> {
+  const result = await login(email, password);
   setToken(result.access_token);
 }
 
@@ -24,6 +28,6 @@ export async function signOut(): Promise<void> {
   }
 }
 
-export function getMe(): Promise<{ role: string }> {
+export function getMe(): Promise<{ role: string; email?: string | null }> {
   return apiFetch("/api/auth/me");
 }

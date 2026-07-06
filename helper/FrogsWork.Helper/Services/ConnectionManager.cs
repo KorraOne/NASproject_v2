@@ -9,12 +9,14 @@ public sealed class ConnectionManager
     public static ConnectionManager Instance { get; } = new();
 
     private readonly List<char> _mappedLetters = [];
+    private static readonly char[] LegacyLetters = "USTVWXYZQRPNMLKJIHGFEDC".ToCharArray();
 
     public IReadOnlyList<char> MappedLetters => _mappedLetters;
 
     public async Task ConnectAsync(UserSession session, CancellationToken cancellationToken = default)
     {
         DisconnectAll();
+        DisconnectLegacyMappings();
 
         using var api = new HelperApiClient(session.ApplianceUrl, session.Username, session.Password);
         var mounts = await api.GetMountsAsync(session.Host, cancellationToken);
@@ -25,7 +27,7 @@ public sealed class ConnectionManager
         {
             foreach (var mount in mounts.Mounts)
             {
-                var suggested = mount.SuggestedLetter.Length > 0 ? mount.SuggestedLetter[0] : 'U';
+                var suggested = mount.SuggestedLetter.Length > 0 ? mount.SuggestedLetter[0] : 'W';
                 var letter = DriveMapper.ResolveLetter(suggested, reserved);
                 reserved.Add(letter);
                 var uncPath = ResolveUncPath(mount.UncPath, session.Host);
@@ -95,5 +97,20 @@ public sealed class ConnectionManager
             }
         }
         _mappedLetters.Clear();
+    }
+
+    private static void DisconnectLegacyMappings()
+    {
+        foreach (var letter in LegacyLetters)
+        {
+            try
+            {
+                DriveMapper.Disconnect(letter);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
     }
 }

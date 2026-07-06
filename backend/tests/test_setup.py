@@ -1,7 +1,7 @@
 def test_setup_status_before_setup(client):
     response = client.get("/api/setup/status")
     assert response.status_code == 200
-    assert response.json() == {"setup_complete": False}
+    assert response.json() == {"setup_complete": False, "requires_claim_code": False}
 
 
 def test_complete_setup(client):

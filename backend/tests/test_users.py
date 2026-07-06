@@ -33,13 +33,13 @@ def test_create_user(client, admin_headers, monkeypatch):
             "username": "alice",
             "display_name": "Alice",
             "password": "alice-pass-1",
-            "is_superuser": False,
         },
     )
     assert response.status_code == 201
     body = response.json()
     assert body["username"] == "alice"
     assert body["display_name"] == "Alice"
+    assert body["archetype_name"] == "Standard Employee"
     assert body["is_superuser"] is False
 
 

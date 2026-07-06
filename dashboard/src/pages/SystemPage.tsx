@@ -2,19 +2,20 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   getSshStatus,
+  getStorageSettings,
   getSystemInfo,
   rebootAppliance,
   setSshStatus,
   shutdownAppliance,
+  updateStorageSettings,
   type SystemInfo,
 } from "../api/system";
 import { ApiRequestError, formatBytes, formatPercent } from "../api/client";
 import { CopyButton } from "../components/CopyButton";
 import { ErrorBanner } from "../components/ErrorBanner";
-import { GuideCard } from "../components/GuideCard";
 import { Loading } from "../components/Loading";
+import { Modal } from "../components/Modal";
 import { PageIntro } from "../components/PageIntro";
-import { StepGuide } from "../components/StepGuide";
 
 function formatUptime(seconds: number): string {
   const days = Math.floor(seconds / 86400);
@@ -28,8 +29,11 @@ function formatUptime(seconds: number): string {
 export function SystemPage() {
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [sshEnabled, setSshEnabled] = useState(false);
+  const [defaultQuotaGb, setDefaultQuotaGb] = useState("");
+  const [applyDefaultQuota, setApplyDefaultQuota] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [infoBanner, setInfoBanner] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [powerAction, setPowerAction] = useState<"reboot" | "shutdown" | null>(null);
 
@@ -43,7 +47,17 @@ export function SystemPage() {
         const ssh = await getSshStatus();
         setSshEnabled(ssh.remote_enabled);
       } catch {
-        // SSH status is optional if integration is unavailable
+        // optional
+      }
+      try {
+        const storage = await getStorageSettings();
+        setDefaultQuotaGb(
+          storage.default_personal_quota_bytes
+            ? String(storage.default_personal_quota_bytes / 1024 ** 3)
+            : "",
+        );
+      } catch {
+        // optional
       }
     } catch (err) {
       setError(err instanceof ApiRequestError ? err.message : "Could not load system info.");
@@ -56,12 +70,40 @@ export function SystemPage() {
     load();
   }, [load]);
 
+  async function onSaveDefaultQuota(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const quotaBytes =
+        defaultQuotaGb.trim() === "" ? null : Math.round(parseFloat(defaultQuotaGb) * 1024 ** 3);
+      if (quotaBytes !== null && (Number.isNaN(quotaBytes) || quotaBytes <= 0)) {
+        setError("Default cap must be a positive number of gigabytes, or leave blank.");
+        setBusy(false);
+        return;
+      }
+      const result = await updateStorageSettings({
+        default_personal_quota_bytes: quotaBytes,
+        apply_to_uncapped_users: applyDefaultQuota,
+      });
+      setDefaultQuotaGb(
+        result.default_personal_quota_bytes
+          ? String(result.default_personal_quota_bytes / 1024 ** 3)
+          : "",
+      );
+      setApplyDefaultQuota(false);
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? err.message : "Could not save default cap.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onToggleSsh() {
     setBusy(true);
     setError(null);
     try {
-      const next = !sshEnabled;
-      const result = await setSshStatus(next);
+      const result = await setSshStatus(!sshEnabled);
       setSshEnabled(result.remote_enabled);
     } catch (err) {
       setError(err instanceof ApiRequestError ? err.message : "Could not update SSH setting.");
@@ -70,20 +112,32 @@ export function SystemPage() {
     }
   }
 
-  async function onPowerConfirm(e: FormEvent) {
-    e.preventDefault();
+  async function onPowerConfirm() {
     if (!powerAction) return;
     setBusy(true);
     setError(null);
+    setPowerAction(null);
+    const isReboot = powerAction === "reboot";
+    setInfoBanner(
+      isReboot
+        ? "Rebooting… the dashboard may go offline for 1–3 minutes. Refresh this page when the box is back."
+        : "Shutting down… the dashboard will go offline. Use the power button to turn the box back on.",
+    );
     try {
-      const result =
-        powerAction === "reboot"
-          ? await rebootAppliance(true)
-          : await shutdownAppliance(true);
-      setPowerAction(null);
-      alert(result.message);
+      if (isReboot) {
+        await rebootAppliance(true);
+      } else {
+        await shutdownAppliance(true);
+      }
     } catch (err) {
-      setError(err instanceof ApiRequestError ? err.message : "Power action failed.");
+      if (isReboot) {
+        setInfoBanner(
+          "Reboot started. If this page stopped responding, wait 1–3 minutes and refresh.",
+        );
+      } else {
+        setError(err instanceof ApiRequestError ? err.message : "Power action failed.");
+        setInfoBanner(null);
+      }
     } finally {
       setBusy(false);
     }
@@ -96,79 +150,31 @@ export function SystemPage() {
   const primaryIp = info.ips[0] ?? "";
   const dashboardUrl = primaryIp ? `http://${primaryIp}` : "http://frogswork.local";
 
-  const helperSteps = [
-    {
-      title: "Create their account",
-      body: (
-        <p>
-          Go to <Link to="/users">Users</Link>, click <strong>Add user</strong>, and note the username and
-          password you give them.
-        </p>
-      ),
-    },
-    {
-      title: "Download the helper app",
-      body: <p>Send them the installer below, or download it on their Windows PC.</p>,
-      action: (
-        <a className="btn btn-primary btn-large" href="/api/helper/download">
-          Download FrogsWork Helper
-        </a>
-      ),
-    },
-    {
-      title: "Install and open",
-      body: (
-        <>
-          <p>Run <strong>FrogsWork.Helper.exe</strong>. Windows may ask whether to allow the app — choose Run or Allow.</p>
-          <GuideCard variant="tip" title="Windows SmartScreen">
-            You may see a blue warning that the app is unrecognized. Click <strong>More info</strong>, then{" "}
-            <strong>Run anyway</strong>. We will offer a signed installer in a future update.
-          </GuideCard>
-        </>
-      ),
-    },
-    {
-      title: "Sign in",
-      body: (
-        <p>
-          In the helper, use the address <strong>{primaryIp || "shown above"}</strong>, their username, and the
-          password you created. Stick to the IP address if the name does not work.
-        </p>
-      ),
-    },
-    {
-      title: "Done",
-      body: (
-        <p>
-          Their personal files appear on drive <strong>U:</strong> and shared folders on <strong>S:</strong> (and
-          other letters) in File Explorer.
-        </p>
-      ),
-    },
-  ];
-
   return (
     <div className="page">
       <PageIntro
         title="System"
-        lede="Set up Windows PCs for your team, and manage appliance settings."
+        lede="Appliance settings and storage. For employee setup, see the Setup guide."
         action={
-          <button type="button" className="btn btn-ghost" onClick={load}>
+          <button type="button" className="btn btn-ghost" onClick={load} disabled={busy}>
             Refresh
           </button>
         }
       />
 
+      {infoBanner ? (
+        <div className="info-banner" role="status">
+          {infoBanner}
+        </div>
+      ) : null}
       <ErrorBanner message={error} />
 
-      <section className="card featured-card section-card">
-        <h2>Set up a Windows PC</h2>
-        <p className="section-card-lede">
-          Follow these steps once per employee. You only need to do the user account part — they handle the rest
-          on their computer.
-        </p>
-        <StepGuide steps={helperSteps} />
-      </section>
+      <p className="page-footer-hint">
+        <Link to="/guide">Open setup guide →</Link> ·{" "}
+        <a href="/help" target="_blank" rel="noreferrer">
+          Employee help page
+        </a>
+      </p>
 
       <div className="storage-grid section-card">
         <section className="card">
@@ -212,9 +218,45 @@ export function SystemPage() {
       </div>
 
       <section className="card panel section-card">
+        <h2>Personal folder defaults</h2>
+        <p className="section-card-lede">
+          Default maximum size for new personal folders. Applies when you add file users.
+        </p>
+        <form onSubmit={onSaveDefaultQuota} className="stack-form">
+          <label>
+            Default personal folder cap (GB)
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              value={defaultQuotaGb}
+              onChange={(e) => setDefaultQuotaGb(e.target.value)}
+            />
+          </label>
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              checked={applyDefaultQuota}
+              onChange={(e) => setApplyDefaultQuota(e.target.checked)}
+            />
+            Apply to existing users who have no individual cap
+          </label>
+          <div className="form-actions">
+            <button type="submit" className="btn btn-primary" disabled={busy}>
+              {busy ? "Saving…" : "Save default cap"}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="card panel section-card">
         <h2>Remote support</h2>
         <p className="section-card-lede">
-          Allow a technician to connect over SSH from your network. Leave this off unless you need help.
+          Controls SSH login to the Linux system on this box — not your dashboard password. When off,
+          SSH is blocked. When on, anyone who can reach port 22 may try to log in with a Linux user
+          account (for example the factory admin user). On your office LAN that is usually enough for
+          support. Over the internet you would also need port forwarding on the customer router or a
+          VPN; FrogsWork does not open that for you.
         </p>
         <label className="checkbox-row ssh-toggle">
           <input type="checkbox" checked={sshEnabled} disabled={busy} onChange={onToggleSsh} />
@@ -225,13 +267,23 @@ export function SystemPage() {
       <section className="card panel section-card">
         <h2>Restart or shut down</h2>
         <p className="section-card-lede">
-          File sharing stops while the box is off or restarting. Usually takes about a minute to come back.
+          File sharing stops while the box is off or restarting. Coming back usually takes 1–3 minutes.
         </p>
         <div className="form-actions">
-          <button type="button" className="btn btn-ghost" onClick={() => setPowerAction("reboot")}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            disabled={busy}
+            onClick={() => setPowerAction("reboot")}
+          >
             Reboot
           </button>
-          <button type="button" className="btn btn-danger" onClick={() => setPowerAction("shutdown")}>
+          <button
+            type="button"
+            className="btn btn-danger"
+            disabled={busy}
+            onClick={() => setPowerAction("shutdown")}
+          >
             Shut down
           </button>
         </div>
@@ -259,24 +311,32 @@ export function SystemPage() {
         </div>
       </details>
 
-      {powerAction && (
-        <section className="card restore-dialog">
-          <h2>{powerAction === "reboot" ? "Reboot FrogsWork?" : "Shut down FrogsWork?"}</h2>
-          <p>
-            {powerAction === "reboot"
-              ? "The dashboard and file sharing will be unavailable for about a minute."
-              : "The appliance will power off. Use the physical power button to turn it back on."}
-          </p>
-          <form onSubmit={onPowerConfirm} className="form-actions">
-            <button type="submit" className="btn btn-danger" disabled={busy}>
-              {busy ? "Working…" : powerAction === "reboot" ? "Reboot now" : "Shut down now"}
+      <Modal
+        open={powerAction !== null}
+        title={powerAction === "reboot" ? "Reboot FrogsWork?" : "Shut down FrogsWork?"}
+        onClose={() => setPowerAction(null)}
+        footer={
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn btn-danger"
+              disabled={busy}
+              onClick={onPowerConfirm}
+            >
+              {powerAction === "reboot" ? "Reboot now" : "Shut down now"}
             </button>
             <button type="button" className="btn btn-ghost" onClick={() => setPowerAction(null)}>
               Cancel
             </button>
-          </form>
-        </section>
-      )}
+          </div>
+        }
+      >
+        <p>
+          {powerAction === "reboot"
+            ? "The dashboard and file sharing will go offline. Allow 1–3 minutes before refreshing this page."
+            : "The appliance will power off. Use the physical power button to turn it back on."}
+        </p>
+      </Modal>
     </div>
   );
 }

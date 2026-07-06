@@ -12,6 +12,8 @@ from frogswork_api.schemas import (
     PowerConfirmRequest,
     SshStatusResponse,
     SshToggleRequest,
+    StorageSettingsResponse,
+    StorageSettingsUpdateRequest,
     SystemInfoResponse,
 )
 from frogswork_api.services import system as system_service
@@ -35,6 +37,24 @@ def set_ssh_status(
     _admin: Annotated[str, Depends(get_current_admin)],
 ) -> SshStatusResponse:
     return system_service.set_ssh_status(body.enabled)
+
+
+@router.get("/storage-settings", response_model=StorageSettingsResponse)
+def storage_settings(
+    _admin: Annotated[str, Depends(get_current_admin)],
+) -> StorageSettingsResponse:
+    return system_service.get_storage_settings()
+
+
+@router.patch("/storage-settings", response_model=StorageSettingsResponse)
+def update_storage_settings(
+    body: StorageSettingsUpdateRequest,
+    _admin: Annotated[str, Depends(get_current_admin)],
+) -> StorageSettingsResponse:
+    return system_service.update_storage_settings(
+        default_personal_quota_bytes=body.default_personal_quota_bytes,
+        apply_to_uncapped_users=body.apply_to_uncapped_users,
+    )
 
 
 @router.post("/reboot", response_model=MessageResponse)

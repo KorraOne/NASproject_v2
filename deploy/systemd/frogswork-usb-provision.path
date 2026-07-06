@@ -1,0 +1,11 @@
+[Unit]
+Description=FrogsWork USB WiFi provisioning
+After=local-fs.target
+
+[Path]
+PathExistsGlob=/media/*/*/frogswork-setup.json
+PathExistsGlob=/media/*/frogswork-setup.json
+MakeDirectory=no
+
+[Install]
+WantedBy=multi-user.target

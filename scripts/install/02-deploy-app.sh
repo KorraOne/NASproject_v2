@@ -51,6 +51,7 @@ rm -f /etc/nginx/sites-enabled/default
 echo "==> Installing systemd units..."
 install -m 644 "${REPO_ROOT}/deploy/systemd/"*.service /etc/systemd/system/
 install -m 644 "${REPO_ROOT}/deploy/systemd/"*.timer /etc/systemd/system/ 2>/dev/null || true
+install -m 644 "${REPO_ROOT}/deploy/systemd/"*.path /etc/systemd/system/ 2>/dev/null || true
 
 echo "==> Installing Avahi service..."
 mkdir -p /etc/avahi/services
@@ -66,14 +67,15 @@ echo "==> Setting ownership on ${INSTALL_ROOT}..."
 chown -R root:root "${INSTALL_ROOT}"
 chmod -R a+rX "${REPO_ROOT}/backend"
 chmod -R a+rX "${REPO_ROOT}/dashboard"
-# Allow deploy user to rsync updates (dev only; tighten in M9 if needed).
+
+FROGSWORK_PRODUCTION="${FROGSWORK_PRODUCTION:-0}"
 DEPLOY_USER="${SUDO_USER:-${FROGSWORK_DEPLOY_USER:-korra}}"
-if id "${DEPLOY_USER}" &>/dev/null; then
+if [[ "$FROGSWORK_PRODUCTION" != "1" && -n "$DEPLOY_USER" ]] && id "${DEPLOY_USER}" &>/dev/null; then
+  echo "==> Dev mode: ${DEPLOY_USER} may rsync updates to ${INSTALL_ROOT}"
   chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${INSTALL_ROOT}"
+  chmod -R a+rX "${REPO_ROOT}/backend"
+  chmod -R a+rX "${REPO_ROOT}/dashboard"
 fi
-# nginx (www-data) must traverse dashboard/ and read dist/ after chown to deploy user.
-chmod -R a+rX "${REPO_ROOT}/backend"
-chmod -R a+rX "${REPO_ROOT}/dashboard"
 
 echo "==> Installing sudoers for integration commands..."
 install -m 644 "${REPO_ROOT}/deploy/sudoers/frogswork-integrations" /etc/sudoers.d/frogswork-integrations
@@ -84,7 +86,7 @@ visudo -cf /etc/sudoers.d/frogswork-integrations
 echo "==> Data directory ownership for API (frogswork user)..."
 if mountpoint -q /data; then
   chown frogswork:frogswork /data/users /data/shared 2>/dev/null || true
-  chmod 755 /data/users /data/shared
+  chmod 755 /data/users /data/shared 2>/dev/null || true
 fi
 
 systemctl daemon-reload

@@ -1,15 +1,16 @@
 <Window x:Class="FrogsWork.Helper.UI.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="FrogsWork — Connect"
-        Height="480"
+        Title="FrogsWork File Storage — Connect"
+        Icon="pack://application:,,,/Assets/app.ico"
+        Height="560"
+        MinHeight="520"
         Width="460"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize"
+        ResizeMode="CanMinimize"
         Background="#EEF5F1">
   <Window.Resources>
     <SolidColorBrush x:Key="PrimaryBrush" Color="#2D6A4F"/>
-    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#245A42"/>
     <SolidColorBrush x:Key="TextBrush" Color="#1B2E24"/>
     <SolidColorBrush x:Key="MutedBrush" Color="#5C6F64"/>
     <SolidColorBrush x:Key="BorderBrush" Color="#D5E0DA"/>
@@ -21,69 +22,78 @@
     </Style>
     <Style TargetType="TextBox">
       <Setter Property="Padding" Value="10,8"/>
-      <Setter Property="Margin" Value="0,4,0,12"/>
+      <Setter Property="Margin" Value="0,4,0,10"/>
       <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
     </Style>
     <Style TargetType="PasswordBox">
       <Setter Property="Padding" Value="10,8"/>
-      <Setter Property="Margin" Value="0,4,0,12"/>
+      <Setter Property="Margin" Value="0,4,0,10"/>
       <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
     </Style>
     <Style TargetType="ComboBox">
       <Setter Property="Padding" Value="8,6"/>
-      <Setter Property="Margin" Value="0,4,0,12"/>
+      <Setter Property="Margin" Value="0,4,0,10"/>
       <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
     </Style>
     <Style x:Key="PrimaryButton" TargetType="Button">
       <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
       <Setter Property="Foreground" Value="White"/>
-      <Setter Property="Padding" Value="16,8"/>
+      <Setter Property="Padding" Value="16,10"/>
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="MinHeight" Value="40"/>
     </Style>
     <Style x:Key="GhostButton" TargetType="Button">
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-      <Setter Property="Padding" Value="16,8"/>
+      <Setter Property="Padding" Value="16,10"/>
       <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="MinHeight" Value="40"/>
     </Style>
   </Window.Resources>
 
-  <Border Margin="24" Background="{StaticResource SurfaceBrush}" CornerRadius="14"
-          BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="24">
-    <StackPanel>
-      <TextBlock FontSize="28" Text="🐸" Margin="0,0,0,4"/>
-      <TextBlock FontSize="20" FontWeight="SemiBold" Text="Connect to your files"/>
-      <TextBlock Margin="0,8,0,20" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"
-                 Text="Sign in with the username and password your manager gave you. Use the FrogsWork box address (IP number) if the name does not work."/>
+  <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="14"
+            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="24">
+      <StackPanel>
+        <Image Source="pack://application:,,,/Assets/logo.png" Width="56" Height="56" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+        <TextBlock FontSize="20" FontWeight="SemiBold" Text="Connect to your files"/>
+        <TextBlock Margin="0,8,0,16" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"
+                   Text="Sign in with the username and password your manager gave you. Use the FrogsWork box address (IP number) if the name does not work."/>
 
-      <TextBlock FontWeight="SemiBold" Text="FrogsWork address"/>
-      <TextBlock FontSize="12" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,2"
-                 Text="Example: 192.168.0.232 — ask your manager if unsure"/>
-      <ComboBox x:Name="HostBox" IsEditable="True" />
+        <TextBlock FontWeight="SemiBold" Text="FrogsWork address"/>
+        <TextBlock FontSize="12" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,2"
+                   Text="Example: 192.168.0.232 — ask your manager if unsure"/>
+        <ComboBox x:Name="HostBox" IsEditable="True" />
 
-      <TextBlock FontWeight="SemiBold" Text="Username"/>
-      <TextBox x:Name="UsernameBox" />
+        <TextBlock FontWeight="SemiBold" Text="Username"/>
+        <TextBox x:Name="UsernameBox" />
 
-      <TextBlock FontWeight="SemiBold" Text="Password"/>
-      <PasswordBox x:Name="PasswordBox" />
+        <TextBlock FontWeight="SemiBold" Text="Password"/>
+        <PasswordBox x:Name="PasswordBox" Margin="0,4,0,16" />
 
-      <Border x:Name="ErrorPanel" Background="{StaticResource ErrorBgBrush}" CornerRadius="8"
-              Padding="10" Margin="0,0,0,12" Visibility="Collapsed">
-        <TextBlock x:Name="ErrorText" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap"/>
-      </Border>
+        <Border x:Name="ErrorPanel" Background="{StaticResource ErrorBgBrush}" CornerRadius="8"
+                Padding="10" Margin="0,0,0,12" Visibility="Collapsed">
+          <TextBlock x:Name="ErrorText" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap"/>
+        </Border>
 
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,0,0">
-        <Button Content="Cancel" Width="96" Margin="0,0,8,0" Style="{StaticResource GhostButton}"
-                IsCancel="True" Click="Cancel_Click"/>
-        <Button x:Name="ConnectButton" Content="Connect" Width="96" Style="{StaticResource PrimaryButton}"
-                IsDefault="True" Click="Connect_Click"/>
+        <Grid Margin="0,8,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <Button Grid.Column="0" Content="Cancel" Style="{StaticResource GhostButton}"
+                  IsCancel="True" Click="Cancel_Click"/>
+          <Button Grid.Column="2" x:Name="ConnectButton" Content="Connect" Style="{StaticResource PrimaryButton}"
+                  IsDefault="True" Click="Connect_Click"/>
+        </Grid>
       </StackPanel>
-    </StackPanel>
-  </Border>
+    </Border>
+  </ScrollViewer>
 </Window>

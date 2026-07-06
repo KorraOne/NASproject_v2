@@ -16,12 +16,63 @@ public partial class App : System.Windows.Application
 
         _tray = new TrayController();
         _tray.ConnectRequested += (_, _) => ShowLogin();
+        _tray.RefreshRequested += (_, _) => _ = RefreshFromSavedSessionAsync();
         _tray.DisconnectRequested += (_, _) => ConnectionManager.Instance.DisconnectAll();
         _tray.ExitRequested += (_, _) => ShutdownApp();
 
-        if (!ShowLogin())
+        if (SessionStore.TryLoad(out var saved))
+        {
+            _tray.SetStatus($"Reconnecting as {saved.Username}…");
+            _ = AutoConnectAsync(saved);
+        }
+        else if (!ShowLogin())
         {
             ShutdownApp();
+        }
+    }
+
+    private async Task AutoConnectAsync(UserSession session)
+    {
+        try
+        {
+            await ConnectionManager.Instance.ConnectAsync(session);
+            _tray?.SetStatus($"Connected as {session.Username}");
+        }
+        catch (Exception ex)
+        {
+            _tray?.SetStatus("Could not reconnect — use Connect…");
+            Forms.MessageBox.Show(
+                ex.Message,
+                "FrogsWork File Storage",
+                Forms.MessageBoxButtons.OK,
+                Forms.MessageBoxIcon.Warning);
+            if (!ShowLogin())
+            {
+                ShutdownApp();
+            }
+        }
+    }
+
+    private async Task RefreshFromSavedSessionAsync()
+    {
+        if (!SessionStore.TryLoad(out var session))
+        {
+            ShowLogin();
+            return;
+        }
+
+        try
+        {
+            await ConnectionManager.Instance.ConnectAsync(session);
+            _tray?.SetStatus($"Refreshed folders for {session.Username}");
+        }
+        catch (Exception ex)
+        {
+            Forms.MessageBox.Show(
+                ex.Message,
+                "FrogsWork File Storage",
+                Forms.MessageBoxButtons.OK,
+                Forms.MessageBoxIcon.Error);
         }
     }
 
@@ -48,7 +99,7 @@ public partial class App : System.Windows.Application
         {
             Forms.MessageBox.Show(
                 args.Exception.Message,
-                "FrogsWork Helper",
+                "FrogsWork File Storage",
                 Forms.MessageBoxButtons.OK,
                 Forms.MessageBoxIcon.Error);
             args.Handled = true;
@@ -59,7 +110,7 @@ public partial class App : System.Windows.Application
             var message = args.ExceptionObject is Exception ex ? ex.Message : "Unknown error.";
             Forms.MessageBox.Show(
                 message,
-                "FrogsWork Helper",
+                "FrogsWork File Storage",
                 Forms.MessageBoxButtons.OK,
                 Forms.MessageBoxIcon.Error);
         };

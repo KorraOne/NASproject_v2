@@ -35,8 +35,12 @@ def test_helper_mounts(client, alice_basic, setup_complete):
     assert response.status_code == 200
     body = response.json()
     assert body["username"] == "alice"
-    assert body["mounts"][0]["suggested_letter"] == "U"
-    assert body["mounts"][0]["kind"] == "private"
+    assert body["mounts"][0]["suggested_letter"] == "W"
+    assert body["mounts"][0]["kind"] == "root"
+    assert body["mounts"][0]["share"] == "frogswork"
+    assert len(body["mounts"]) == 1
+    assert "Personal" in body["mounts"][0]["personal_path"]
+    assert body["mounts"][0]["personal_path"].endswith("\\alice")
 
 
 def test_helper_mounts_requires_auth(client, setup_complete):

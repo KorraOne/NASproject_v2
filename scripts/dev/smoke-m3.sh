@@ -20,8 +20,9 @@ echo
 echo "==> Linux + Samba"
 id alice
 pdbedit -L | grep -i alice || sudo pdbedit -L | grep -i alice
-ls -la /data/users/alice
-getfacl /data/users/alice | head -6
+ls -la /data/frogswork/Personal/alice
+getfacl /data/frogswork/Personal/alice | head -8
+stat -c '%a %U:%G' /data/frogswork/Personal/alice
 
 echo "==> SMB auth test (optional — requires smbclient)"
 if command -v smbclient >/dev/null; then

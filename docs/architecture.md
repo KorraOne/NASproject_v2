@@ -27,12 +27,17 @@ The installer uses LVM on `nvme0n1p3`. M1 creates logical volume `ubuntu-vg/frog
 ## Data paths
 
 ```
-/data/users/{username}/     Private folder per file user
-/data/shared/{folder}/      Shared business folders
+/data/frogswork/            Unified SMB share root (ACL-controlled)
+  Projects/                 Team folders (admin-created)
+  Invoices/
+  Personal/                 Private homes container (traverse-only for members)
+    {username}/             One private folder per file user
 /data/.snapshots/           Readonly btrfs snapshots (M6+)
-/var/lib/frogswork/         SQLite DB, setup flag, helper MSI cache (M2+)
+/var/lib/frogswork/         SQLite DB, setup flag, helper cache
 /opt/frogswork/             Application install root
 ```
+
+Windows clients map a single drive (`W:`) to `\\frogswork\frogswork`. Team folders and `Personal\{username}` appear based on POSIX ACLs. Samba `hide unreadable = yes` filters Explorer listings so users do not see folders they cannot read.
 
 ## systemd services
 

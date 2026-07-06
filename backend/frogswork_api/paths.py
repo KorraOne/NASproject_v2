@@ -7,9 +7,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 VERSION_FILE = REPO_ROOT / "VERSION"
 
 DATA_ROOT = Path("/data")
-DATA_USERS = DATA_ROOT / "users"
-DATA_SHARED = DATA_ROOT / "shared"
+DATA_FROGSWORK = DATA_ROOT / "frogswork"
+PERSONAL_CONTAINER_NAME = "Personal"
+DATA_PERSONAL = DATA_FROGSWORK / PERSONAL_CONTAINER_NAME
+DATA_USERS = DATA_PERSONAL
+DATA_SHARED = DATA_FROGSWORK
 DATA_SNAPSHOTS = DATA_ROOT / ".snapshots"
+
+SAMBA_SHARE_NAME = "frogswork"
+FILE_USERS_GROUP = "frogswork-users"
 
 STATE_DIR = Path("/var/lib/frogswork")
 DB_PATH = STATE_DIR / "frogswork.db"

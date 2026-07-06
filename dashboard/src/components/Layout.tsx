@@ -1,37 +1,39 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { BRAND_NAME } from "../brand";
 import { useAuth } from "../context/AuthContext";
+import { NavMoreMenu } from "./NavMoreMenu";
+
+function usersNavActive(pathname: string): boolean {
+  return pathname === "/users" || pathname.startsWith("/users/");
+}
 
 export function Layout() {
   const { logout } = useAuth();
+  const location = useLocation();
 
   return (
     <div className="app-shell">
       <header className="app-header">
         <div className="brand">
-          <span className="brand-mark" aria-hidden>
-            🐸
-          </span>
+          <img className="brand-logo" src="/logo.png" alt="" aria-hidden />
           <div>
-            <strong>FrogsWork</strong>
-            <span className="brand-sub">File Storage</span>
+            <strong>{BRAND_NAME}</strong>
           </div>
         </div>
         <nav className="app-nav" aria-label="Main">
-          <NavLink to="/users" className={({ isActive }) => (isActive ? "active" : undefined)}>
+          <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : undefined)}>
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="/users"
+            className={() => (usersNavActive(location.pathname) ? "active" : undefined)}
+          >
             Users
           </NavLink>
           <NavLink to="/folders" className={({ isActive }) => (isActive ? "active" : undefined)}>
             Folders
           </NavLink>
-          <NavLink to="/storage" className={({ isActive }) => (isActive ? "active" : undefined)}>
-            Storage
-          </NavLink>
-          <NavLink to="/snapshots" className={({ isActive }) => (isActive ? "active" : undefined)}>
-            Snapshots
-          </NavLink>
-          <NavLink to="/system" className={({ isActive }) => (isActive ? "active" : undefined)}>
-            System
-          </NavLink>
+          <NavMoreMenu />
         </nav>
         <button type="button" className="btn btn-ghost" onClick={() => logout()}>
           Sign out

@@ -1,24 +1,31 @@
 """Pydantic request/response models."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SetupStatusResponse(BaseModel):
     setup_complete: bool
+    requires_claim_code: bool = False
 
 
 class SetupRequest(BaseModel):
     password: str = Field(min_length=8)
     timezone: str = Field(min_length=1, max_length=64)
+    claim_code: str | None = Field(default=None, max_length=32)
+    email: str | None = Field(default=None, max_length=254)
+    backup_email: str | None = Field(default=None, max_length=254)
+    backup_phone: str | None = Field(default=None, max_length=32)
 
 
 class SetupResponse(BaseModel):
     setup_complete: bool
     message: str
+    access_token: str | None = None
 
 
 class LoginRequest(BaseModel):
     password: str
+    email: str | None = Field(default=None, max_length=254)
 
 
 class LoginResponse(BaseModel):
@@ -32,13 +39,64 @@ class MessageResponse(BaseModel):
 
 class AdminMeResponse(BaseModel):
     role: str = "dashboard_admin"
+    email: str | None = None
+
+
+class ElevationGrantEntry(BaseModel):
+    grant_type: str
+    target_id: int
+    target_name: str
+    access: str
+
+
+class UserElevationResponse(BaseModel):
+    expires_at: str
+    granted_at: str
+    reason: str | None = None
+    grants: list[ElevationGrantEntry] = []
+
+
+class ElevationGrantCreate(BaseModel):
+    grant_type: str = Field(pattern="^(shared_folder|personal_folder)$")
+    target_id: int
+    access: str = Field(pattern="^(read|read_write)$")
+
+
+class UserElevationReplaceRequest(BaseModel):
+    duration_hours: int = Field(ge=1, le=720)
+    reason: str | None = Field(default=None, max_length=200)
+    grants: list[ElevationGrantCreate]
+
+
+class ElevationSharedFolderOption(BaseModel):
+    id: int
+    name: str
+    baseline_access: str
+    allowed_access: list[str]
+
+
+class ElevationPersonalFolderOption(BaseModel):
+    user_id: int
+    username: str
+    display_name: str
+    baseline_access: str
+    allowed_access: list[str]
+
+
+class ElevationOptionsResponse(BaseModel):
+    shared_folders: list[ElevationSharedFolderOption]
+    personal_folders: list[ElevationPersonalFolderOption]
 
 
 class FileUserResponse(BaseModel):
     id: int
     username: str
     display_name: str
+    archetype_id: int | None
+    archetype_name: str | None
     is_superuser: bool
+    is_elevated: bool = False
+    elevation: UserElevationResponse | None = None
     quota_bytes: int | None
     created_at: str
     updated_at: str
@@ -48,16 +106,17 @@ class FileUserCreateRequest(BaseModel):
     username: str = Field(min_length=3, max_length=32)
     display_name: str | None = Field(default=None, max_length=64)
     password: str = Field(min_length=8)
-    is_superuser: bool = False
+    archetype_id: int | None = None
     quota_bytes: int | None = None
 
 
 class FileUserUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     display_name: str | None = Field(default=None, max_length=64)
     password: str | None = Field(default=None, min_length=8)
-    is_superuser: bool | None = None
+    archetype_id: int | None = None
     quota_bytes: int | None = None
-    folder_permissions: list["UserFolderPermissionEntry"] | None = None
 
 
 class UserFolderPermissionEntry(BaseModel):
@@ -80,12 +139,30 @@ class FolderPermissionAssign(BaseModel):
     access: str = Field(pattern="^(read|read_write)$")
 
 
+class FolderArchetypePermissionAssign(BaseModel):
+    archetype_id: int
+    access: str = Field(pattern="^(read|read_write)$")
+
+
+class FolderArchetypePermissionsReplaceRequest(BaseModel):
+    permissions: list[FolderArchetypePermissionAssign]
+
+
+class FolderArchetypePermissionEntry(BaseModel):
+    archetype_id: int
+    archetype_name: str
+    access: str
+
+
 class FolderCreateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=64)
+    quota_bytes: int | None = None
+    archetype_permissions: list[FolderArchetypePermissionAssign] = []
 
 
 class FolderUpdateRequest(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=64)
+    quota_bytes: int | None = None
 
 
 class FolderResponse(BaseModel):
@@ -94,6 +171,7 @@ class FolderResponse(BaseModel):
     slug: str
     path: str
     share_name: str
+    quota_bytes: int | None
     created_at: str
     permissions: list[FolderPermissionEntry]
 
@@ -157,6 +235,8 @@ class SystemInfoResponse(BaseModel):
     os_used_bytes: int
     os_free_bytes: int
     version: str
+    serial: str | None = None
+    admin_email: str | None = None
 
 
 class SshStatusResponse(BaseModel):
@@ -165,6 +245,15 @@ class SshStatusResponse(BaseModel):
 
 class SshToggleRequest(BaseModel):
     enabled: bool
+
+
+class StorageSettingsResponse(BaseModel):
+    default_personal_quota_bytes: int | None
+
+
+class StorageSettingsUpdateRequest(BaseModel):
+    default_personal_quota_bytes: int | None = None
+    apply_to_uncapped_users: bool = False
 
 
 class PowerConfirmRequest(BaseModel):
@@ -178,6 +267,7 @@ class HelperMountResponse(BaseModel):
     suggested_letter: str
     kind: str
     access: str
+    personal_path: str | None = None
 
 
 class HelperMountListResponse(BaseModel):
@@ -185,6 +275,57 @@ class HelperMountListResponse(BaseModel):
     username: str
     display_name: str
     mounts: list[HelperMountResponse]
+
+
+class ArchetypeFolderPermissionEntry(BaseModel):
+    folder_id: int
+    folder_name: str
+    access: str
+
+
+class ArchetypeResponse(BaseModel):
+    id: int
+    name: str
+    is_system: bool
+    can_view_all_personal: bool
+    user_count: int
+    created_at: str
+    folder_permissions: list[ArchetypeFolderPermissionEntry]
+
+
+class ArchetypeCreateRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=64)
+
+
+class ArchetypeUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=64)
+
+
+class ArchetypeFolderPermissionAssign(BaseModel):
+    folder_id: int
+    access: str = Field(pattern="^(read|read_write)$")
+
+
+class ArchetypeFolderPermissionsReplaceRequest(BaseModel):
+    permissions: list[ArchetypeFolderPermissionAssign]
+
+
+class EffectiveSharedFolderPermission(BaseModel):
+    folder_name: str
+    access: str
+
+
+class EffectivePermissionResponse(BaseModel):
+    user_id: int
+    username: str
+    display_name: str
+    archetype_id: int | None
+    archetype_name: str | None
+    can_view_all_personal: bool
+    is_elevated: bool = False
+    elevation: UserElevationResponse | None = None
+    personal_folder: str
+    shared_folders: list[EffectiveSharedFolderPermission]
 
 
 FileUserUpdateRequest.model_rebuild()

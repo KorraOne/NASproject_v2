@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 from frogswork_api.db import connect
 from frogswork_api.integrations import acl, samba_shares
 from frogswork_api.integrations._run import IntegrationError
+from frogswork_api.services import elevations as elevation_service
 
 Access = Literal["read", "read_write"]
 
@@ -59,15 +60,14 @@ def sync_folder_to_system(
     if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found.")
 
-    name = folder_name or row["name"]
     path = Path(folder_path or row["path"])
-    perms = _permissions_for_folder(conn, folder_id)
-    usernames = [p["username"] for p in perms]
+    base_perms = _permissions_for_folder(conn, folder_id)
+    elevation_perms = elevation_service.active_shared_grants_for_folder(conn, folder_id)
+    perms = elevation_service.merge_folder_permissions(base_perms, elevation_perms)
 
     try:
-        samba_shares.write_share_config(name, path, usernames)
-        acl.sync_shared_folder_acl(path, [(p["username"], p["access"]) for p in perms])
-        samba_shares.test_and_reload()
+        acl.sync_shared_folder_acl(path, perms)
+        samba_shares.reload_samba()
     except IntegrationError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

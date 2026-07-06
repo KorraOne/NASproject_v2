@@ -16,7 +16,7 @@ type AuthState = "loading" | "needs-setup" | "needs-login" | "authenticated";
 interface AuthContextValue {
   state: AuthState;
   refresh: () => Promise<void>;
-  login: (password: string) => Promise<void>;
+  login: (password: string, email?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -54,8 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const login = useCallback(
-    async (password: string) => {
-      await signIn(password);
+    async (password: string, email?: string) => {
+      await signIn(email, password);
       setState("authenticated");
     },
     [],

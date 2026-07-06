@@ -1,0 +1,11 @@
+[Unit]
+Description=Import WiFi settings from USB
+After=frogswork-usb-provision.path
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'for f in /media/*/*/frogswork-setup.json /media/*/frogswork-setup.json; do [ -f "$f" ] || continue; MOUNT="$(dirname "$f")"; /opt/frogswork/scripts/factory/import-wifi.sh "$MOUNT"; break; done'
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target
