@@ -8,8 +8,10 @@ systemctl enable nginx.service
 systemctl enable avahi-daemon.service
 systemctl enable smbd.service nmbd.service 2>/dev/null || systemctl enable smbd nmbd
 systemctl enable frogswork-snapshot.timer 2>/dev/null || true
+systemctl enable frogswork-usb-provision.path frogswork-usb-provision.service 2>/dev/null || true
 
 echo "==> Starting services..."
+systemctl restart frogswork-usb-provision.path 2>/dev/null || true
 systemctl restart frogswork-api.service
 systemctl restart nginx.service
 systemctl restart avahi-daemon.service

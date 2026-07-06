@@ -4,7 +4,7 @@ After=frogswork-usb-provision.path
 
 [Service]
 Type=oneshot
-ExecStart=/bin/bash -c 'for f in /media/*/*/frogswork-setup.json /media/*/frogswork-setup.json; do [ -f "$f" ] || continue; MOUNT="$(dirname "$f")"; /opt/frogswork/scripts/factory/import-wifi.sh "$MOUNT"; break; done'
+ExecStart=/opt/frogswork/scripts/factory/import-wifi.sh auto
 RemainAfterExit=no
 
 [Install]

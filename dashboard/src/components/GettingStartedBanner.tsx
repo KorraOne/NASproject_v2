@@ -18,7 +18,7 @@ export function GettingStartedBanner() {
         <strong>Getting started</strong>
         <p>
           Add your first team member on <Link to="/users">Users</Link>, then share the{" "}
-          <Link to="/guide">setup guide</Link> and <a href="/api/helper/download">Windows helper</a>.
+          <Link to="/guide">employee help link</Link> so staff can download the Windows helper themselves.
         </p>
       </div>
       <button type="button" className="btn btn-ghost btn-small" onClick={dismiss}>

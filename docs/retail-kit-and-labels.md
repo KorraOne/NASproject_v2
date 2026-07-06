@@ -36,42 +36,27 @@ Reference the NUC rating plate for electrical specs — do not duplicate incorre
 | Instruction | Enter at frogswork.local when prompted |
 | Serial (small) | FW-2026-00042 |
 
-## Unit registry (minimum viable)
+Spreadsheet or CSV on your laptop. Copy [`unit-registry.template.csv`](factory/unit-registry.template.csv) to `unit-registry.csv` (gitignored — contains setup codes).
 
-Spreadsheet or CSV until volume justifies tooling. **Store claim code plaintext once at factory** — device DB stores hash only.
+Generate credentials: `python scripts/factory/generate-unit-credentials.py`
 
 | Column | When filled |
 |--------|-------------|
-| `serial` | Factory |
-| `claim_code` | Factory |
-| `manufactured_date` | Factory |
-| `software_version` | Factory |
-| `hardware_model` | Factory |
-| `qa_pass` | Factory burn-in |
+| `serial` | Build |
+| `claim_code` | Build (plaintext **laptop only**) |
+| `manufactured_date` | Build |
+| `software_version` | Build |
+| `hardware_model` | Build |
+| `qa_pass` | After smoke tests |
 | `shipped_date` | Dispatch |
-| `order_id` / customer | Sale |
-| `owner_email` | After customer setup |
-| `warranty_start` | Ship date or setup date — pick one policy |
-| `warranty_end` | Calculated |
-| `rma_notes` | If returned |
+| `owner_email` | After customer setup (optional note) |
+| `notes` | Anytime |
 
-Factory script appends rows: `scripts/factory/register-unit.sh` (future).
+Device also appends a row via `scripts/factory/register-unit.sh` during `factory-install.sh`.
 
-## Warranty one-pager (publish on website + include summary on quick-start card)
+## Consumer rights (card / website summary)
 
-**Term:** 24 months from date of purchase (keep receipt) or shipment date for direct sales.
-
-**Covers:** Hardware defect, failure to boot, storage device failure under normal office use.
-
-**Software:** Best-effort fixes via updates; core file storage features included in one-time purchase.
-
-**Excludes:** Physical damage, liquid, unauthorized modifications, data loss (backups reduce risk but are not a guarantee).
-
-**Remedy:** Repair, replace unit, or refund at KorraOne discretion.
-
-**RMA:** Email support with serial + description → RMA number → return instructions → data wipe policy stated upfront.
-
-**Australia:** Consumer guarantees under ACL apply in addition to this warranty.
+**Australian Consumer Law applies.** If the hardware is faulty, contact support — we will repair, replace, or refund as appropriate under the ACL. See [warranty-rma.md](../warranty-rma.md). Do not promise a fixed “24-month warranty” beyond ACL rights.
 
 ## Quick-start card (summary text)
 

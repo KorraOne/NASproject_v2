@@ -4,21 +4,41 @@
   <meta charset="utf-8" />
   <title>FrogsWork WiFi Setup</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    :root { --green: #2d6a4f; --muted: #5c6f64; --border: #d5e0da; }
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 2rem auto; padding: 0 1rem; color: #1b2e24; }
+    h1 { color: var(--green); margin-bottom: 0.25rem; }
+    .steps { background: #f6faf8; border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+    .steps ol { margin: 0; padding-left: 1.25rem; }
+    .steps li { margin: 0.35rem 0; }
     label { display: block; margin-top: 1rem; font-weight: 600; }
-    input, select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
-    button { margin-top: 1.5rem; padding: 0.65rem 1rem; background: #2d6a4f; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
-    .hint { color: #5c6f64; font-size: 0.9rem; }
-    .ok { color: #2d6a4f; }
+    input, select { width: 100%; padding: 0.55rem; margin-top: 0.25rem; box-sizing: border-box; border: 1px solid var(--border); border-radius: 8px; }
+    button { margin-top: 1.25rem; padding: 0.7rem 1.1rem; background: var(--green); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+    button:disabled { opacity: 0.6; cursor: wait; }
+    .hint { color: var(--muted); font-size: 0.92rem; }
+    .ok { color: var(--green); font-weight: 600; }
     .err { color: #b42318; }
+    .card { border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-top: 1rem; }
   </style>
 </head>
 <body>
   <h1>FrogsWork WiFi Setup</h1>
-  <p class="hint">Save your network details to this USB, then plug the USB into your FrogsWork box.</p>
+  <p class="hint">Use this when you cannot plug an ethernet cable into your router.</p>
+
+  <div class="steps">
+    <strong>What happens next</strong>
+    <ol>
+      <li>Save your Wi-Fi details to this USB (below).</li>
+      <li>Safely eject the USB from your computer.</li>
+      <li>Plug the USB into your <strong>powered-on</strong> FrogsWork box.</li>
+      <li>Wait about 2 minutes, then plug the USB back into your computer.</li>
+      <li>Open <code>frogswork-setup.log</code> on the USB — look for <strong>Finished: SUCCESS</strong>.</li>
+      <li>Join the same Wi-Fi on your computer and open <strong>http://frogswork.local</strong></li>
+    </ol>
+  </div>
+
   <form id="form">
     <label>Wi-Fi network name
-      <input id="ssid" required autocomplete="off" />
+      <input id="ssid" required autocomplete="off" placeholder="Your office Wi-Fi name" />
     </label>
     <label>Wi-Fi password
       <input id="password" type="password" required autocomplete="off" />
@@ -31,14 +51,21 @@
         <option value="GB">United Kingdom</option>
       </select>
     </label>
-    <button type="submit">Save to USB</button>
+    <button type="submit" id="saveBtn">Save to this USB</button>
   </form>
-  <p id="msg" class="hint"></p>
+
+  <div id="msg" class="hint"></div>
+
+  <div class="card hint">
+  <strong>Ethernet is easier</strong> — if you can run a cable from the box to your router, use ethernet instead of this USB.
+  </div>
+
   <script>
-    document.getElementById("form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const msg = document.getElementById("msg");
-      const payload = {
+    const msg = document.getElementById("msg");
+    const saveBtn = document.getElementById("saveBtn");
+
+    function buildPayload() {
+      return {
         version: 1,
         wifi: {
           ssid: document.getElementById("ssid").value.trim(),
@@ -47,29 +74,50 @@
         },
         optional_hostname: "frogswork",
       };
+    }
+
+    async function saveToUsb(blob) {
+      if (window.showSaveFilePicker) {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: "frogswork-setup.json",
+          startIn: "desktop",
+          types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return "saved-picker";
+      }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "frogswork-setup.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      return "downloaded";
+    }
+
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      msg.className = "hint";
+      saveBtn.disabled = true;
+      const payload = buildPayload();
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       try {
-        if (window.showSaveFilePicker) {
-          const handle = await window.showSaveFilePicker({
-            suggestedName: "frogswork-setup.json",
-            types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
-          });
-          const writable = await handle.createWritable();
-          await writable.write(blob);
-          await writable.close();
-          msg.textContent = "Saved. Eject the USB safely, plug it into the FrogsWork box, wait 2 minutes.";
-          msg.className = "ok";
+        const mode = await saveToUsb(blob);
+        if (mode === "saved-picker") {
+          msg.innerHTML = "Saved <code>frogswork-setup.json</code>. Eject this USB safely, plug it into the FrogsWork box, wait 2 minutes, then read <code>frogswork-setup.log</code>.";
         } else {
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = "frogswork-setup.json";
-          a.click();
-          msg.textContent = "Downloaded frogswork-setup.json — copy it to this USB root, then plug into the FrogsWork box.";
-          msg.className = "ok";
+          msg.innerHTML = "Downloaded <code>frogswork-setup.json</code> — <strong>move it to the root of this USB</strong>, then follow the steps above.";
         }
+        msg.className = "ok";
       } catch (err) {
-        msg.textContent = "Could not save: " + err.message;
-        msg.className = "err";
+        if (err.name !== "AbortError") {
+          msg.textContent = "Could not save: " + err.message;
+          msg.className = "err";
+        }
+      } finally {
+        saveBtn.disabled = false;
       }
     });
   </script>

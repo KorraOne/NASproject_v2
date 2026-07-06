@@ -20,8 +20,13 @@ export function HelpPage() {
 
   const steps = [
     {
-      title: "Download FrogsWork Helper",
-      body: <p>Install the helper app on your Windows PC. Your manager created your username and password.</p>,
+      title: "Download on your Windows PC",
+      body: (
+        <p>
+          Your manager added your account already. Download and install the helper <strong>on this computer</strong> —
+          not from the owner dashboard.
+        </p>
+      ),
       action: (
         <a className="btn btn-primary btn-large" href="/api/helper/download">
           Download FrogsWork Helper

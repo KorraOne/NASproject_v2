@@ -1,44 +1,39 @@
-# Warranty and RMA
+# Warranty and returns
 
-## Warranty term
+## Australian Consumer Law (ACL)
 
-**24 months** from date of purchase (keep your receipt) or shipment date for direct sales from KorraOne.
+FrogsWork File Storage is sold in Australia. **Your rights under the Australian Consumer Law are not limited by this page.**
 
-## What is covered
+If the hardware has a **major failure** or is **faulty** (for example it will not boot, the storage device has failed, or it does not work as a reasonable consumer would expect for a small-office file appliance), you are entitled to a remedy such as repair, replacement, or refund.
 
-- Hardware defect or failure to boot under normal office use
-- Storage device failure under normal office use
-- Best-effort software fixes via updates (core file storage included in one-time purchase)
+Contact us and we will work with you in line with the ACL.
+
+## What we help with
+
+- Hardware that is defective or stops working through no fault of yours under normal office use
+- Best-effort software fixes when updates are available
 
 ## What is not covered
 
-- Physical damage, liquid, or misuse
-- Unauthorized modifications
-- Data loss (nightly backups reduce risk but are not a guarantee)
-- Issues caused by unsupported network or client configurations
+- Physical damage, liquid, misuse, or unauthorised modifications
+- Lost or deleted files (use nightly backups; backups reduce risk but are not a guarantee)
+- Problems caused by your network, power, or unsupported client setups
 
-## Remedy
-
-At KorraOne's discretion: repair, replace the unit, or refund.
-
-## Returns (RMA)
+## If something is wrong
 
 1. Email **support@korraone.com** with:
-   - Serial number (on unit label, e.g. `FW-2026-00042`)
-   - Description of the problem
-   - Proof of purchase if available
-2. KorraOne issues an **RMA number** and return instructions.
-3. **Data wipe:** Customer is responsible for backing up data before return. KorraOne will wipe returned units before refurbish.
+   - Serial number on the unit label (e.g. `FW-2026-00042`)
+   - What is wrong, in plain language
+2. We will advise next steps (troubleshooting, repair, replacement, or return as appropriate under the ACL).
 
-## Refurbished units
+## Returns
 
-Refurbished appliances receive a new setup code and factory reset before resale.
+If a return is agreed:
 
-## Australia
-
-Consumer guarantees under the Australian Consumer Law apply in addition to this warranty.
+- We will give you return instructions and an RMA reference
+- **Back up your files first** — returned units are wiped before refurbish
 
 ## Support contact
 
 - **Email:** support@korraone.com
-- **Include:** Serial number and software version (System page in dashboard)
+- **Include:** Serial number (on the label on the back/side of the unit)

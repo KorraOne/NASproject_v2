@@ -12,6 +12,7 @@ A business buys a pre-configured Asus NUC, plugs it into their network, and mana
 | [`docs/development-behaviour.md`](docs/development-behaviour.md) | How to develop — workflow, git, testing, deployment |
 | [`docs/dev-steps/README.md`](docs/dev-steps/README.md) | **Per-milestone implementation guides** (M0–M9) |
 | [`docs/architecture.md`](docs/architecture.md) | System components and data paths |
+| [`docs/hand-built-first-unit.md`](docs/hand-built-first-unit.md) | **First hand-built unit** — serial, setup code, WiFi USB |
 | [`docs/install-manufacturing.md`](docs/install-manufacturing.md) | NUC provisioning and smoke tests |
 | [`docs/commercial-ship-checklist.md`](docs/commercial-ship-checklist.md) | Ship/no-ship criteria (hand-sold and factory) |
 | [`docs/customer-quick-start.md`](docs/customer-quick-start.md) | Owner quick-start (print with unit) |

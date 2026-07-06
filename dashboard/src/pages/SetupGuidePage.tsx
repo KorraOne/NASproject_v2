@@ -12,8 +12,8 @@ export function SetupGuidePage() {
       title: "Add a file user",
       body: (
         <p>
-          Go to <Link to="/users/new">Add user</Link> and create a username and password. Each person gets a
-          private folder at <strong>W:\Personal\their-username</strong>.
+          Go to <Link to="/users/new">Add user</Link> and create a username and password for each person.
+          They will use these to sign in to the helper app on their own PC.
         </p>
       ),
     },
@@ -28,25 +28,11 @@ export function SetupGuidePage() {
       ),
     },
     {
-      title: "Download the Windows helper",
+      title: "Send staff the employee help link",
       body: (
         <p>
-          Install the helper on each employee PC. It maps the <strong>W:</strong> drive automatically after
-          sign-in.
-        </p>
-      ),
-      action: (
-        <a className="btn btn-primary" href="/api/helper/download">
-          Download FrogsWork Helper
-        </a>
-      ),
-    },
-    {
-      title: "Share the employee guide",
-      body: (
-        <p>
-          Send your team this link — no admin login required. They can download the helper and follow the
-          steps on their Windows PC.
+          Each person downloads and installs the Windows helper <strong>on their own computer</strong> — you do
+          not install it for them. Share this link (no admin password required):
         </p>
       ),
       action: (
@@ -54,9 +40,21 @@ export function SetupGuidePage() {
           <code className="help-url">{helpUrl}</code>
           <CopyButton text={helpUrl} label="Copy link" />
           <a className="btn btn-ghost" href="/help" target="_blank" rel="noreferrer">
-            Preview guide
+            Preview employee page
           </a>
         </div>
+      ),
+    },
+    {
+      title: "Optional: test the helper yourself",
+      body: (
+        <p>
+          If you also need files on the appliance, create a file user for yourself and download the helper from the{" "}
+          <a href="/help" target="_blank" rel="noreferrer">
+            employee help page
+          </a>{" "}
+          like your staff will.
+        </p>
       ),
     },
     {
@@ -82,7 +80,7 @@ export function SetupGuidePage() {
     <div className="page">
       <PageIntro
         title="User guide"
-        lede="Step-by-step checklist for onboarding employees to FrogsWork File Storage."
+        lede="Onboard employees: you add users and permissions; staff download the helper themselves."
       />
       <section className="card featured-card section-card">
         <StepGuide steps={steps} />
