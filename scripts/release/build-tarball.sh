@@ -5,6 +5,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 VERSION="$(tr -d '\r\n' < "${ROOT}/VERSION")"
 OUT_DIR="${1:-${ROOT}/dist}"
+case "${OUT_DIR}" in
+  /* | [A-Za-z]:* | ?:*)
+    ;;
+  *)
+    OUT_DIR="${ROOT}/${OUT_DIR}"
+    ;;
+esac
+mkdir -p "${OUT_DIR}"
 STAGING="${OUT_DIR}/frogswork-${VERSION}"
 ARCHIVE="${OUT_DIR}/frogswork-v${VERSION}.tar.gz"
 
@@ -50,7 +58,7 @@ fi
 
 tar -czf "${ARCHIVE}" -C "${OUT_DIR}" "frogswork-${VERSION}"
 SHA256="$(sha256sum "${ARCHIVE}" | awk '{print $1}')"
-echo "${SHA256}  frogswork-v${VERSION}.tar.gz" > "${ARCHIVE}.sha256"
+echo "${SHA256}  $(basename "${ARCHIVE}")" > "${ARCHIVE}.sha256"
 
 echo "==> Created ${ARCHIVE}"
 echo "==> SHA256 ${SHA256}"
