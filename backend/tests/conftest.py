@@ -35,6 +35,14 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr("frogswork_api.integrations.btrfs.DATA_ROOT", data_root)
     monkeypatch.setattr("frogswork_api.integrations.btrfs.DATA_SNAPSHOTS", snapshots_dir)
 
+    # Some integration modules import DATA_* at module import time; patch their module-level copies too.
+    monkeypatch.setattr("frogswork_api.integrations.linux_users.DATA_ROOT", data_root)
+    monkeypatch.setattr("frogswork_api.integrations.linux_users.DATA_FROGSWORK", frogswork_shared)
+    monkeypatch.setattr("frogswork_api.integrations.linux_users.DATA_PERSONAL", data_personal)
+    monkeypatch.setattr("frogswork_api.integrations.linux_users.DATA_USERS", data_personal)
+    monkeypatch.setattr("frogswork_api.integrations.share_layout.DATA_FROGSWORK", frogswork_shared)
+    monkeypatch.setattr("frogswork_api.integrations.share_layout.DATA_PERSONAL", data_personal)
+
     monkeypatch.setattr("frogswork_api.setup.router.DATA_FROGSWORK", frogswork_shared)
     monkeypatch.setattr("frogswork_api.services.folders.DATA_FROGSWORK", frogswork_shared)
     monkeypatch.setattr("frogswork_api.services.folders.DATA_SHARED", frogswork_shared)
