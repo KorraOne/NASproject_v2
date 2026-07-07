@@ -3,10 +3,14 @@ name: CI
 on:
   push:
     branches: [main, master]
+    tags:
+      - "v*"
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,8 +48,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -64,3 +72,108 @@ jobs:
           path: |
             dist/frogswork-v*.tar.gz
             dist/frogswork-v*.tar.gz.sha256
+
+      - name: Create GitHub Release (stable tag)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/frogswork-v*.tar.gz
+            dist/frogswork-v*.tar.gz.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Write stable latest manifest to repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          TARBALL="frogswork-v${VERSION}.tar.gz"
+          SHA256="$(cut -d' ' -f1 dist/${TARBALL}.sha256)"
+          REPO="${GITHUB_REPOSITORY}"
+          mkdir -p updates
+          cat > updates/latest.json <<EOF
+          {
+            "version": "${VERSION}",
+            "tarball_url": "https://github.com/${REPO}/releases/download/${TAG}/${TARBALL}",
+            "sha256": "${SHA256}",
+            "notes": "Stable release ${TAG}"
+          }
+          EOF
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add updates/latest.json
+          git commit -m "chore(updates): bump stable latest to ${TAG}" || exit 0
+          git push origin HEAD:main
+
+  proto-release:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'main' && github.actor != 'github-actions[bot]')
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build proto tarball
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          bash scripts/release/build-tarball.sh dist
+          VERSION="$(tr -d '\r\n' < VERSION)"
+          cp "dist/frogswork-v${VERSION}.tar.gz" "dist/frogswork-proto.tar.gz"
+          cp "dist/frogswork-v${VERSION}.tar.gz.sha256" "dist/frogswork-proto.tar.gz.sha256"
+          echo "${SHORT_SHA}" > dist/proto-sha.txt
+
+      - name: Force-update proto tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          git tag -f proto
+          git push -f origin proto
+
+      - name: Create/update GitHub Release (proto)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: proto
+          name: Prototype channel
+          prerelease: true
+          files: |
+            dist/frogswork-proto.tar.gz
+            dist/frogswork-proto.tar.gz.sha256
+            dist/proto-sha.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Write prototype latest manifest to repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHORT_SHA="$(cat dist/proto-sha.txt)"
+          SHA256="$(cut -d' ' -f1 dist/frogswork-proto.tar.gz.sha256)"
+          REPO="${GITHUB_REPOSITORY}"
+          mkdir -p updates
+          cat > updates/latest-proto.json <<EOF
+          {
+            "version": "proto-${SHORT_SHA}",
+            "tarball_url": "https://github.com/${REPO}/releases/download/proto/frogswork-proto.tar.gz",
+            "sha256": "${SHA256}",
+            "notes": "Prototype build ${SHORT_SHA}"
+          }
+          EOF
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add updates/latest-proto.json
+          git commit -m "chore(updates): bump proto latest to ${SHORT_SHA}" || exit 0
+          git push origin HEAD:main

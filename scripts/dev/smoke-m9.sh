@@ -4,6 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ADMIN_PASS="${FROGSWORK_ADMIN_PASS:-FrogsWork-Dev-2026}"
+ADMIN_EMAIL="${FROGSWORK_ADMIN_EMAIL:-}"
 BASE="${FROGSWORK_BASE:-http://localhost}"
 
 echo "==> Health"
@@ -34,9 +35,13 @@ if command -v smbclient >/dev/null; then
 fi
 
 echo "==> Snapshot API"
+EMAIL_JSON=""
+if [[ -n "$ADMIN_EMAIL" ]]; then
+  EMAIL_JSON=",\"email\":\"$ADMIN_EMAIL\""
+fi
 TOKEN=$(curl -sf -X POST "$BASE/api/auth/login" \
   -H 'Content-Type: application/json' \
-  -d "{\"password\":\"$ADMIN_PASS\"}" | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+  -d "{\"password\":\"$ADMIN_PASS\"$EMAIL_JSON}" | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 AUTH="Authorization: Bearer $TOKEN"
 curl -sf "$BASE/api/snapshots" -H "$AUTH" | python3 -m json.tool | head -20
 curl -sf -X POST "$BASE/api/snapshots" -H "$AUTH" >/dev/null 2>&1 || true

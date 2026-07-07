@@ -3,12 +3,17 @@
 set -euo pipefail
 
 ADMIN_PASS="${FROGSWORK_ADMIN_PASS:-FrogsWork-Dev-2026}"
+ADMIN_EMAIL="${FROGSWORK_ADMIN_EMAIL:-}"
 BASE="${FROGSWORK_BASE:-http://localhost}"
 
 echo "==> Login test"
+EMAIL_JSON=""
+if [[ -n "$ADMIN_EMAIL" ]]; then
+  EMAIL_JSON=",\"email\":\"$ADMIN_EMAIL\""
+fi
 TOKEN=$(curl -sf -X POST "$BASE/api/auth/login" \
   -H 'Content-Type: application/json' \
-  -d "{\"password\":\"$ADMIN_PASS\"}" | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+  -d "{\"password\":\"$ADMIN_PASS\"$EMAIL_JSON}" | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 echo "  token: ${TOKEN:0:20}..."
 
 AUTH="Authorization: Bearer $TOKEN"

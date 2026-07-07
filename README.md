@@ -17,6 +17,9 @@ A business buys a pre-configured Asus NUC, plugs it into their network, and mana
 | [`docs/commercial-ship-checklist.md`](docs/commercial-ship-checklist.md) | Ship/no-ship criteria (hand-sold and factory) |
 | [`docs/customer-quick-start.md`](docs/customer-quick-start.md) | Owner quick-start (print with unit) |
 | [`docs/factory-deploy.md`](docs/factory-deploy.md) | Factory line and release tarball |
+| [`docs/prototype-deploy.md`](docs/prototype-deploy.md) | Prototype loop (nuc1) — click-to-update |
+| [`docs/hand-make-nuc2.md`](docs/hand-make-nuc2.md) | Hand-make a sellable unit (nuc2) |
+| [`docs/manual-qa-nuc2.md`](docs/manual-qa-nuc2.md) | Manual QA checklist for sellable unit |
 | [`docs/warranty-rma.md`](docs/warranty-rma.md) | Warranty and returns |
 | [`docs/api.md`](docs/api.md) | API conventions and endpoint reference |
 

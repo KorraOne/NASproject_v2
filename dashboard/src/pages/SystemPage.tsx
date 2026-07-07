@@ -1,6 +1,8 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  applyLatestUpdate,
+  checkForUpdates,
   getSshStatus,
   getStorageSettings,
   getSystemInfo,
@@ -9,6 +11,7 @@ import {
   shutdownAppliance,
   updateStorageSettings,
   type SystemInfo,
+  type UpdateCheck,
 } from "../api/system";
 import { ApiRequestError, formatBytes, formatPercent } from "../api/client";
 import { CopyButton } from "../components/CopyButton";
@@ -31,6 +34,8 @@ export function SystemPage() {
   const [sshEnabled, setSshEnabled] = useState(false);
   const [defaultQuotaGb, setDefaultQuotaGb] = useState("");
   const [applyDefaultQuota, setApplyDefaultQuota] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<UpdateCheck | null>(null);
+  const [updateAction, setUpdateAction] = useState<"apply" | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [infoBanner, setInfoBanner] = useState<string | null>(null);
@@ -56,6 +61,12 @@ export function SystemPage() {
             ? String(storage.default_personal_quota_bytes / 1024 ** 3)
             : "",
         );
+      } catch {
+        // optional
+      }
+      try {
+        const updates = await checkForUpdates();
+        setUpdateStatus(updates);
       } catch {
         // optional
       }
@@ -138,6 +149,47 @@ export function SystemPage() {
         setError(err instanceof ApiRequestError ? err.message : "Power action failed.");
         setInfoBanner(null);
       }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onCheckUpdates() {
+    setBusy(true);
+    setError(null);
+    try {
+      const updates = await checkForUpdates();
+      setUpdateStatus(updates);
+      if (!updates.updates_enabled) {
+        setInfoBanner(
+          "Updates aren’t configured yet on this appliance. Set FROGSWORK_UPDATE_MANIFEST_URL on the box to enable.",
+        );
+      } else if (updates.update_available) {
+        setInfoBanner(`Update available: ${updates.available_version}.`);
+      } else {
+        setInfoBanner("You’re up to date.");
+      }
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? err.message : "Could not check for updates.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onApplyUpdateConfirm() {
+    setBusy(true);
+    setError(null);
+    setUpdateAction(null);
+    setInfoBanner(
+      "Applying update… the dashboard may go offline briefly. Refresh this page in 1–3 minutes.",
+    );
+    try {
+      const result = await applyLatestUpdate();
+      setInfoBanner(result.message);
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? err.message : "Update failed.");
+      setInfoBanner(null);
     } finally {
       setBusy(false);
     }
@@ -265,6 +317,49 @@ export function SystemPage() {
       </section>
 
       <section className="card panel section-card">
+        <h2>Updates</h2>
+        <p className="section-card-lede">
+          Keep this appliance up to date without SSH. Updates are pulled from your release bucket.
+        </p>
+        <dl className="stat-list">
+          <div>
+            <dt>Current version</dt>
+            <dd>{info.version}</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd>
+              {updateStatus
+                ? updateStatus.updates_enabled
+                  ? updateStatus.update_available
+                    ? `Update available: ${updateStatus.available_version ?? "—"}`
+                    : "Up to date"
+                  : "Not configured"
+                : "—"}
+            </dd>
+          </div>
+        </dl>
+        {updateStatus?.notes ? (
+          <p className="page-footer-hint" style={{ marginTop: "0.75rem" }}>
+            {updateStatus.notes}
+          </p>
+        ) : null}
+        <div className="form-actions">
+          <button type="button" className="btn btn-ghost" disabled={busy} onClick={onCheckUpdates}>
+            {busy ? "Checking…" : "Check for updates"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={busy || !updateStatus?.updates_enabled || !updateStatus?.update_available}
+            onClick={() => setUpdateAction("apply")}
+          >
+            Apply update
+          </button>
+        </div>
+      </section>
+
+      <section className="card panel section-card">
         <h2>Restart or shut down</h2>
         <p className="section-card-lede">
           File sharing stops while the box is off or restarting. Coming back usually takes 1–3 minutes.
@@ -335,6 +430,32 @@ export function SystemPage() {
           {powerAction === "reboot"
             ? "The dashboard and file sharing will go offline. Allow 1–3 minutes before refreshing this page."
             : "The appliance will power off. Use the physical power button to turn it back on."}
+        </p>
+      </Modal>
+
+      <Modal
+        open={updateAction !== null}
+        title="Apply update now?"
+        onClose={() => setUpdateAction(null)}
+        footer={
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn btn-danger"
+              disabled={busy}
+              onClick={onApplyUpdateConfirm}
+            >
+              {busy ? "Applying…" : "Apply update"}
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={() => setUpdateAction(null)}>
+              Cancel
+            </button>
+          </div>
+        }
+      >
+        <p>
+          This will download the latest release and restart services. The dashboard may go offline for
+          1–3 minutes.
         </p>
       </Modal>
     </div>

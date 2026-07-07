@@ -15,6 +15,8 @@ from frogswork_api.schemas import (
     StorageSettingsResponse,
     StorageSettingsUpdateRequest,
     SystemInfoResponse,
+    UpdateApplyResponse,
+    UpdateCheckResponse,
 )
 from frogswork_api.services import system as system_service
 
@@ -73,3 +75,13 @@ def shutdown_system(
 ) -> MessageResponse:
     result = system_service.shutdown(body.confirm)
     return MessageResponse(message=result["message"])
+
+
+@router.get("/updates/check", response_model=UpdateCheckResponse)
+def check_updates(_admin: Annotated[str, Depends(get_current_admin)]) -> UpdateCheckResponse:
+    return system_service.check_for_updates()
+
+
+@router.post("/updates/apply", response_model=UpdateApplyResponse)
+def apply_updates(_admin: Annotated[str, Depends(get_current_admin)]) -> UpdateApplyResponse:
+    return system_service.apply_update_latest()

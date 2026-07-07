@@ -29,7 +29,7 @@ cp -a "${ROOT}/backend/frogswork_api" "${ROOT}/backend/pyproject.toml" "${ROOT}/
 cp -a "${ROOT}/dashboard/dist/." "${STAGING}/dashboard/dist/"
 cp "${ROOT}/dist/helper-publish/FrogsWork.Helper.exe" "${STAGING}/helper/FrogsWork.Helper.exe"
 cp -a "${ROOT}/scripts/install" "${ROOT}/scripts/btrfs" "${ROOT}/scripts/samba" \
-  "${ROOT}/scripts/factory" "${ROOT}/scripts/migrate" "${STAGING}/scripts/"
+  "${ROOT}/scripts/factory" "${ROOT}/scripts/migrate" "${ROOT}/scripts/update" "${STAGING}/scripts/"
 cp -a "${ROOT}/deploy/." "${STAGING}/deploy/"
 cp "${ROOT}/VERSION" "${STAGING}/VERSION"
 

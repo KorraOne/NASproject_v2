@@ -260,6 +260,21 @@ class PowerConfirmRequest(BaseModel):
     confirm: bool = False
 
 
+class UpdateCheckResponse(BaseModel):
+    current_version: str
+    update_available: bool
+    available_version: str | None = None
+    tarball_url: str | None = None
+    sha256: str | None = None
+    notes: str | None = None
+    updates_enabled: bool = True
+
+
+class UpdateApplyResponse(BaseModel):
+    message: str
+    applying_version: str | None = None
+
+
 class HelperMountResponse(BaseModel):
     label: str
     share: str

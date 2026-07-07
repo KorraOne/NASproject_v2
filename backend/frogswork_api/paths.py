@@ -24,6 +24,9 @@ SAMBA_SHARES_STAGING = STATE_DIR / "samba-shares"
 SAMBA_SHARES_D = Path("/etc/samba/shares.d")
 HELPER_DIR = STATE_DIR / "helper"
 HELPER_EXE = HELPER_DIR / "FrogsWork.Helper.exe"
+UPDATES_DIR = STATE_DIR / "updates"
+PENDING_UPDATE_TARBALL = UPDATES_DIR / "pending.tar.gz"
+PENDING_UPDATE_SHA256 = UPDATES_DIR / "pending.sha256"
 
 
 def read_version() -> str:

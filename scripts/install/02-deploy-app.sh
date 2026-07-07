@@ -34,14 +34,22 @@ fi
 "${VENV}/bin/pip" install -q --upgrade pip
 "${VENV}/bin/pip" install -q -e "${REPO_ROOT}/backend"
 
-echo "==> Building dashboard..."
-cd "${REPO_ROOT}/dashboard"
-if [[ -f package-lock.json ]]; then
-  npm ci --silent
+if [[ "${FROGSWORK_SKIP_DASHBOARD_BUILD:-0}" == "1" ]]; then
+  echo "==> Skipping dashboard build (prebuilt dist expected)..."
+elif [[ -d "${REPO_ROOT}/dashboard/dist" && ! -d "${REPO_ROOT}/dashboard/src" ]]; then
+  echo "==> Skipping dashboard build (release payload only)..."
+elif [[ -d "${REPO_ROOT}/dashboard/dist" && ( ! -x "$(command -v npm 2>/dev/null)" ) ]]; then
+  echo "==> Skipping dashboard build (npm not available; using existing dist)..."
 else
-  npm install --silent
+  echo "==> Building dashboard..."
+  cd "${REPO_ROOT}/dashboard"
+  if [[ -f package-lock.json ]]; then
+    npm ci --silent
+  else
+    npm install --silent
+  fi
+  npm run build
 fi
-npm run build
 
 echo "==> Installing nginx site..."
 install -m 644 "${REPO_ROOT}/deploy/nginx/frogswork.conf" /etc/nginx/sites-available/frogswork

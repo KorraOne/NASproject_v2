@@ -61,3 +61,34 @@ def test_reboot_requires_confirm(client, admin_headers, setup_complete):
         json={"confirm": True},
     )
     assert ok.status_code == 200
+
+
+def test_updates_disabled_without_manifest(client, admin_headers, setup_complete, monkeypatch):
+    monkeypatch.delenv("FROGSWORK_UPDATE_MANIFEST_URL", raising=False)
+    response = client.get("/api/system/updates/check", headers=admin_headers)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["updates_enabled"] is False
+    assert body["update_available"] is False
+
+
+def test_updates_check_and_apply(client, admin_headers, setup_complete, monkeypatch):
+    monkeypatch.setenv("FROGSWORK_UPDATE_MANIFEST_URL", "https://example.invalid/manifest.json")
+
+    class FakeManifest:
+        version = "9.9.9"
+        tarball_url = "https://example.invalid/frogswork.tar.gz"
+        sha256 = "deadbeef"
+        notes = "hi"
+
+    monkeypatch.setattr("frogswork_api.integrations.update_ops.fetch_manifest", lambda _u: FakeManifest)
+    monkeypatch.setattr("frogswork_api.integrations.update_ops.stage_update_tarball", lambda **_k: None)
+    monkeypatch.setattr("frogswork_api.integrations.update_ops.apply_staged_update", lambda: None)
+
+    check = client.get("/api/system/updates/check", headers=admin_headers)
+    assert check.status_code == 200
+    assert check.json()["update_available"] is True
+
+    apply = client.post("/api/system/updates/apply", headers=admin_headers)
+    assert apply.status_code == 200
+    assert "Update applied" in apply.json()["message"] or apply.json()["message"]

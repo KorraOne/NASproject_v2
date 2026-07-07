@@ -12,6 +12,8 @@ export interface SystemInfo {
   os_used_bytes: number;
   os_free_bytes: number;
   version: string;
+  serial?: string | null;
+  admin_email?: string | null;
 }
 
 export function getSystemInfo(): Promise<SystemInfo> {
@@ -59,4 +61,22 @@ export function updateStorageSettings(payload: {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
+}
+
+export interface UpdateCheck {
+  updates_enabled: boolean;
+  current_version: string;
+  update_available: boolean;
+  available_version: string | null;
+  tarball_url: string | null;
+  sha256: string | null;
+  notes: string | null;
+}
+
+export function checkForUpdates(): Promise<UpdateCheck> {
+  return apiFetch("/api/system/updates/check");
+}
+
+export function applyLatestUpdate(): Promise<{ message: string; applying_version?: string | null }> {
+  return apiFetch("/api/system/updates/apply", { method: "POST" });
 }

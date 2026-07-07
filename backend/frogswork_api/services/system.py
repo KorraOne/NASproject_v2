@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 
 from fastapi import HTTPException, status
@@ -13,6 +14,7 @@ from frogswork_api.paths import DATA_ROOT, read_version
 
 SSH_SETTING_KEY = "remote_ssh_enabled"
 DEFAULT_PERSONAL_QUOTA_KEY = "default_personal_quota_bytes"
+UPDATE_MANIFEST_URL_KEY = "update_manifest_url"
 
 
 def ensure_ssh_setting_migrated() -> None:
@@ -167,3 +169,77 @@ def update_storage_settings(
                 ) from exc
 
     return get_storage_settings()
+
+
+def _get_update_manifest_url() -> str | None:
+    env = os.environ.get("FROGSWORK_UPDATE_MANIFEST_URL")
+    if env and env.strip():
+        return env.strip()
+    with connect() as conn:
+        stored = get_setting(conn, UPDATE_MANIFEST_URL_KEY)
+    return stored.strip() if stored else None
+
+
+def check_for_updates() -> dict:
+    manifest_url = _get_update_manifest_url()
+    current = read_version()
+    if not manifest_url:
+        return {
+            "updates_enabled": False,
+            "current_version": current,
+            "update_available": False,
+            "available_version": None,
+            "tarball_url": None,
+            "sha256": None,
+            "notes": None,
+        }
+
+    from frogswork_api.integrations import update_ops
+
+    try:
+        manifest = update_ops.fetch_manifest(manifest_url)
+    except IntegrationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(exc),
+        ) from exc
+
+    update_available = manifest.version.strip() != current.strip()
+    return {
+        "updates_enabled": True,
+        "current_version": current,
+        "update_available": update_available,
+        "available_version": manifest.version,
+        "tarball_url": manifest.tarball_url,
+        "sha256": manifest.sha256,
+        "notes": manifest.notes,
+    }
+
+
+def apply_update_latest() -> dict:
+    status = check_for_updates()
+    if not status.get("updates_enabled"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Updates are not enabled on this appliance.",
+        )
+    if not status.get("update_available"):
+        return {"message": "No update available.", "applying_version": None}
+
+    from frogswork_api.integrations import update_ops
+
+    try:
+        update_ops.stage_update_tarball(
+            tarball_url=status["tarball_url"],
+            sha256_hex=status["sha256"],
+        )
+        update_ops.apply_staged_update()
+    except IntegrationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
+    return {
+        "message": "Update applied. Refresh the dashboard in a minute.",
+        "applying_version": status.get("available_version"),
+    }
