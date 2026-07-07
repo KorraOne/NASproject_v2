@@ -24,7 +24,14 @@ jobs:
           node-version: "20"
 
       - name: Backend tests
+        env:
+          FROGSWORK_STATE_DIR: ${{ runner.temp }}/frogswork-state
+          FROGSWORK_DATA_ROOT: ${{ runner.temp }}/frogswork-data
+          FROGSWORK_SKIP_SYSTEM: "1"
+          FROGSWORK_SKIP_CLAIM: "1"
+          FROGSWORK_JWT_SECRET: test-jwt-secret-key-for-pytest-only
         run: |
+          mkdir -p "$FROGSWORK_STATE_DIR" "$FROGSWORK_DATA_ROOT/frogswork/Personal" "$FROGSWORK_DATA_ROOT/.snapshots"
           cd backend
           python -m pip install -e ".[dev]"
           pytest -q

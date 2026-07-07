@@ -1,12 +1,22 @@
 """Well-known paths on the appliance and in development."""
 
+from __future__ import annotations
+
+import os
 from pathlib import Path
+
+
+def _env_path(key: str, default: str) -> Path:
+    value = os.environ.get(key)
+    return Path(value) if value else Path(default)
+
 
 # Repo root (development) or /opt/frogswork (appliance)
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VERSION_FILE = REPO_ROOT / "VERSION"
 
-DATA_ROOT = Path("/data")
+# Override in tests/CI with FROGSWORK_DATA_ROOT and FROGSWORK_STATE_DIR.
+DATA_ROOT = _env_path("FROGSWORK_DATA_ROOT", "/data")
 DATA_FROGSWORK = DATA_ROOT / "frogswork"
 PERSONAL_CONTAINER_NAME = "Personal"
 DATA_PERSONAL = DATA_FROGSWORK / PERSONAL_CONTAINER_NAME
@@ -17,7 +27,7 @@ DATA_SNAPSHOTS = DATA_ROOT / ".snapshots"
 SAMBA_SHARE_NAME = "frogswork"
 FILE_USERS_GROUP = "frogswork-users"
 
-STATE_DIR = Path("/var/lib/frogswork")
+STATE_DIR = _env_path("FROGSWORK_STATE_DIR", "/var/lib/frogswork")
 DB_PATH = STATE_DIR / "frogswork.db"
 JWT_SECRET_FILE = STATE_DIR / "jwt_secret"
 SAMBA_SHARES_STAGING = STATE_DIR / "samba-shares"
